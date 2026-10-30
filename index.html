@@ -311,6 +311,21 @@ main.fullgame{padding:0!important;gap:0!important;overflow:hidden!important;posi
   padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-left:14px;padding-right:max(14px,env(safe-area-inset-right,0px));animation:slidein .22s ease-out}
 @keyframes slidein{from{transform:translateX(100%)}}
 .dbtn{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px}
+/* 친구네 가는 길 */
+.trip{position:fixed;inset:0;z-index:37;overflow:hidden;background:#a9d574;animation:tripin .35s ease-out}
+.trip.out{opacity:0;transition:opacity .45s}
+@keyframes tripin{from{opacity:0}}
+.tripsky{position:absolute;inset:0 0 52% 0;background:linear-gradient(#bfe3f3,#e8f6fb)}
+.triproad{position:absolute;left:0;right:0;bottom:24%;height:15%;background:#dcc596;border-top:4px solid #c9ad74;border-bottom:4px solid #c9ad74;overflow:hidden}
+.tripdash{position:absolute;left:0;top:46%;width:300%;height:6px;background:repeating-linear-gradient(90deg,#fff 0 40px,transparent 40px 80px);animation:tripdash var(--trip,2600ms) linear}
+@keyframes tripdash{to{transform:translateX(-50%)}}
+.triptrees{position:absolute;left:0;bottom:40%;display:flex;gap:60px;font-size:46px;white-space:nowrap;animation:triptrees var(--trip,2600ms) linear}
+@keyframes triptrees{from{transform:translateX(30%)}to{transform:translateX(-90%)}}
+.triprider{position:absolute;left:50%;bottom:26%;transform:translateX(-50%);width:110px;height:130px;animation:tripbob .3s ease-in-out infinite}
+.triprider .tripchar{position:absolute;left:15px;bottom:28px;width:80px}
+.triprider .tripveh{position:absolute;left:5px;bottom:0;font-size:84px;line-height:1;transform:scaleX(-1)}
+@keyframes tripbob{50%{transform:translate(-50%,-5px)}}
+.triptext{position:absolute;left:0;right:0;top:22%;text-align:center;font-family:var(--display);font-size:22px;color:#5a3a22;text-shadow:0 2px 0 #fff;margin:0}
 /* 친구 입장 알림 */
 .joinbanner{position:fixed;left:50%;top:calc(62px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:45;background:#fff8e1;border:2px solid #f2c94c;color:var(--ink);
   border-radius:16px;padding:10px 16px;font-size:15px;text-align:center;box-shadow:0 6px 18px rgba(59,47,36,.18);max-width:90%;opacity:1;transition:opacity 1.7s ease}
@@ -437,10 +452,11 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-7</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-8</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
+<div id="trip" class="trip" hidden></div>
 <div id="sheetwrap" class="sheetwrap" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
@@ -507,6 +523,9 @@ Object.assign(ITEMS,{
 Object.assign(ITEMS.apple,{food:1}); Object.assign(ITEMS.pear,{food:1}); Object.assign(ITEMS.straw,{food:1});
 const FOOD_EN={straw:4,apple:6,pear:7,ricecake:10,omelet:15,juice:15,pearjuice:18,cheese:20,bread:25,cake:40};
 const EN_COST={plant:3,harvest:2,craft:4,steal:6,animal:1}, BUFF_MS=30*60000;
+Object.assign(ITEMS,{
+  a_chicken:{name:"닭",ic:"🐔",sell:30,animal:"chicken"}, a_cow:{name:"소",ic:"🐄",sell:100,animal:"cow"},
+  a_sheep:{name:"양",ic:"🐑",sell:70,animal:"sheep"}, a_cat:{name:"고양이",ic:"🐈",sell:40,animal:"cat"}, a_dog:{name:"강아지",ic:"🐕",sell:45,animal:"dog"}});
 const RECIPES=[
   {out:"cheese",need:{milk:2},hint:"강아지·고양이도 좋아해요"},
   {out:"bread",need:{rice:2,egg:1,milk:1}},
@@ -1031,8 +1050,15 @@ function openSheet(title,html,bind){
 }
 function closeSheet(){ $("sheetwrap").hidden=true; $("sheetwrap").innerHTML=""; }
 const inv=k=>S.inv[k]||0;
-function addInv(k,n){ if(k==="coin"){ S.coins+=n; } else S.inv[k]=Math.max(0,inv(k)+n); }
-function has(k,n){ return k==="coin"?S.coins>=n:inv(k)>=n; }
+// 동물(a_소 등)은 받으면 우리로, 줄 때는 창고 먼저·그다음 우리에서
+function addInv(k,n){ if(k==="coin"){ S.coins+=n; return; }
+  const A=ITEMS[k]&&ITEMS[k].animal;
+  if(A){ if(n>0){ for(let i=0;i<n;i++){ if(S.animals.length<MAX_ANIMALS) S.animals.push({type:A,at:Date.now()}); else S.inv[k]=inv(k)+1; } }
+    else { let need=-n; const fi=Math.min(inv(k),need); S.inv[k]=inv(k)-fi; need-=fi; while(need>0){ const i=S.animals.findIndex(a=>a.type===A); if(i<0) break; S.animals.splice(i,1); need--; } }
+    animsKey=""; return; }
+  S.inv[k]=Math.max(0,inv(k)+n); }
+const ownedCount=k=>k==="coin"?S.coins:(ITEMS[k]&&ITEMS[k].animal?inv(k)+S.animals.filter(a=>a.type===ITEMS[k].animal).length:inv(k));
+function has(k,n){ return ownedCount(k)>=n; }
 function pay(n){ if(S.coins<n){ toast(`동전이 ${n-S.coins}개 모자라요`); SFX.no(); return false; } S.coins-=n; SFX.coin(); return true; }
 const fmt=s=>{ s=Math.max(0,Math.ceil(s)); return s>=60?`${Math.floor(s/60)}분 ${s%60}초`:`${s}초`; };
 const itemName=k=>k==="coin"?"동전":ITEMS[k].name, itemIc=k=>k==="coin"?"🪙":ITEMS[k].ic;
@@ -1188,9 +1214,11 @@ function label(c,txt,x,y,size,color="#3b2f24"){
   c.lineWidth=3; c.strokeStyle="#fff"; c.strokeText(txt,x,y); c.fillStyle=color; c.fillText(txt,x,y);
 }
 function rr(c,x,y,w,h,r,fill){ c.beginPath(); c.roundRect(x,y,w,h,r); c.fillStyle=fill; c.fill(); }
-function drawChar(c,ch,x,y,t,{pose="stand",walking=false,time=0,name=null,mine=false,id=null}={}){
-  const im=charSprite(ch,pose); const w=t*1.05, h=w*1.22, bob=walking?Math.abs(Math.sin(time*12))*t*.08:0;
-  c.fillStyle="rgba(0,0,0,.18)"; c.beginPath(); c.ellipse(x,y+t*.32,t*.32,t*.1,0,0,Math.PI*2); c.fill();
+function drawChar(c,ch,x,y,t,{pose="stand",walking=false,time=0,name=null,mine=false,id=null,ride=null}={}){
+  const im=charSprite(ch,pose); const w=t*1.05, h=w*1.22; let bob=walking?Math.abs(Math.sin(time*12))*t*.08:0;
+  if(ride&&VEHICLES[ride]){ const vb=walking?Math.abs(Math.sin(time*(ride==="horse"?10:6)))*t*.05:0;
+    c.save(); c.translate(x,y+t*.22-vb); c.scale(-1,1); emo(c,VEHICLES[ride].ic,0,0,t*(ride==="car"?1.15:.95)); c.restore(); y-=t*(ride==="car"?.28:.36); bob=vb; }
+  if(!ride){ c.fillStyle="rgba(0,0,0,.18)"; c.beginPath(); c.ellipse(x,y+t*.32,t*.32,t*.1,0,0,Math.PI*2); c.fill(); }
   if(im.complete&&im.naturalWidth) c.drawImage(im,x-w/2,y+t*.38-h-bob,w,h);
   if(mine&&eating&&eating.until>Date.now()){ const ph=(eating.until-Date.now())/2600, chew=Math.abs(Math.sin(time*9))*t*.06;
     emo(c,eating.ic,x+w*.3,y+t*.38-h*.48-bob-chew,t*(.32+ph*.12)); }
@@ -1241,7 +1269,7 @@ function updatePeers(list){
   const seen=new Set();
   list.forEach(p=>{ const pr=p.presence||{}; if(!pr.id||pr.id===docId||!pr.scene) return; seen.add(pr.id);
     const cur=peerPos.get(pr.id)||{x:pr.x,y:pr.y};
-    peerPos.set(pr.id,{...cur,tx:pr.x,ty:pr.y,nick:pr.nick,char:pr.char,scene:pr.scene,at:pr.at,pose:pr.pose||"stand",hs:pr.hs||0,fl:pr.fl||0}); });
+    peerPos.set(pr.id,{...cur,tx:pr.x,ty:pr.y,nick:pr.nick,char:pr.char,scene:pr.scene,at:pr.at,pose:pr.pose||"stand",hs:pr.hs||0,fl:pr.fl||0,ride:pr.ride||null}); });
   [...peerPos.keys()].forEach(k=>{ if(!seen.has(k)) peerPos.delete(k); });
 }
 function peersHere(){
@@ -1254,15 +1282,15 @@ function stepPeers(dt){
     if(d>6){ p.x=p.tx; p.y=p.ty; p.walking=false; } else if(d>.02){ const sp=Math.min(d,dt*3.2); p.x+=dx/d*sp; p.y+=dy/d*sp; p.walking=true; } else p.walking=false; });
 }
 function pushPeers(items,c,t,time,scale=1){
-  peersHere().forEach(p=>items.push({y:p.y,d:()=>drawChar(c,p.char,p.x*t,p.y*t,t*scale,{walking:p.walking,time,name:p.nick,id:p.id,pose:p.pose})}));
+  peersHere().forEach(p=>items.push({y:p.y,d:()=>drawChar(c,p.char,p.x*t,p.y*t,t*scale,{walking:p.walking,time,name:p.nick,id:p.id,pose:p.pose,ride:where==="room"?null:p.ride})}));
 }
 let lastPres=0, lastPresKey="";
 function sharePosition(now){
   if(!roomCap||!S||now-lastPres<350) return;
   const w=W[where], scene=tab==="village"?where:null;
-  const key=[scene,visitId||docId,w.x.toFixed(2),w.y.toFixed(2),resting||"",curHouse,floor].join("|");
+  const key=[scene,visitId||docId,w.x.toFixed(2),w.y.toFixed(2),resting||"",curHouse,floor,S.ride||""].join("|");
   if(key===lastPresKey) return; lastPres=now; lastPresKey=key;
-  roomCap.presence({id:docId,nick:S.nick,char:S.char,scene,at:visitId||docId,x:+w.x.toFixed(2),y:+w.y.toFixed(2),pose:resting?"sit":"stand",hs:curHouse,fl:floor}).catch(()=>{});
+  roomCap.presence({id:docId,nick:S.nick,char:S.char,scene,at:visitId||docId,x:+w.x.toFixed(2),y:+w.y.toFixed(2),pose:resting?"sit":"stand",hs:curHouse,fl:floor,ride:S.ride||null}).catch(()=>{});
 }
 
 // ---------- 화면 ----------
@@ -1275,9 +1303,10 @@ function vVillage(v){
   const info=visiting&&where!=="world"?(ownerOn?`<span class="on">● ${esc(o.nick)}님 지금 접속 중</span>`:`<span>${esc(doorText(o)||`${o.nick}님은 지금 외출 중이에요`)}</span>`):"";
   const btns=visiting&&where!=="world"?`<button class="ovbtn" id="gbWrite">✏️ 방명록</button><button class="ovbtn" id="goHome">🏠 집으로</button>`
     :where==="world"?`<button class="ovbtn" id="goHome">🏠 우리 마을</button>`
-    :`<button class="ovbtn" id="bagOv">🎒 가방</button>${where==="map"?`<button class="ovbtn" id="toWorld">🗺 지도</button>`:""}`;
+    :`<button class="ovbtn" id="bagOv">🎒 가방</button>${where==="map"?`<button class="ovbtn" id="goOv">🚶 놀러가기</button><button class="ovbtn" id="toWorld">🗺 지도</button>`:""}`;
+  const rideBtn=where==="map"&&(S.vehicles||[]).length?`<button class="ovbtn" id="rideOv">${S.ride?`${VEHICLES[S.ride].ic} 내리기`:"🚲 타기"}</button>`:"";
   v.innerHTML=`<div class="mapwrap full"><canvas id="map"></canvas>
-    <div class="ov-top"><div class="titlechip">${esc(title)}<small>${info}<span id="onChip" ${onlineCount()?"":"hidden"}><span class="on">●</span> 접속 ${onlineCount()}명</span></small></div><div class="ov-btns">${btns}</div></div>
+    <div class="ov-top"><div class="titlechip">${esc(title)}<small>${info}<span id="onChip" ${onlineCount()?"":"hidden"}><span class="on">●</span> 접속 ${onlineCount()}명</span></small></div><div class="ov-btns">${btns}${rideBtn}</div></div>
     ${where==="map"?`<div class="zoombtns" id="zoomBtns"><button data-z="in" aria-label="크게 보기">＋</button><button data-z="out" aria-label="넓게 보기">－</button><button data-z="me" aria-label="내 위치로">◎</button></div>`:""}
     <div class="ov-bottom"><div class="actbar float" id="actbar"></div>
       <form class="composer ghost" id="talkForm"><input id="talkIn" maxlength="200" autocomplete="off" placeholder="말하면 머리 위에 떠요"><button class="btn sm" type="submit">말하기</button></form></div>
@@ -1317,6 +1346,8 @@ function vVillage(v){
   if(q("goHome")) q("goHome").onclick=()=>{ SFX.tap(); travelHome(); };
   if(q("gbWrite")) q("gbWrite").onclick=()=>guestbookSheet(o);
   if(q("bagOv")) q("bagOv").onclick=()=>{ SFX.tap(); bagSheet(); };
+  if(q("goOv")) q("goOv").onclick=()=>{ SFX.tap(); goSheet(); };
+  if(q("rideOv")) q("rideOv").onclick=()=>{ if(S.ride) setRide(null); else if((S.vehicles||[]).length===1) setRide(S.vehicles[0]); else rideSheet(); };
   q("talkForm").onsubmit=e=>{ e.preventDefault(); const inp=q("talkIn"), tx=inp.value.trim(); if(!tx) return; inp.value=""; sendChat(tx); inp.blur(); };
   renderAct(); startLoop();
 }
@@ -1385,7 +1416,7 @@ function tapMap(fx,fy){
     // 집 창은 '빈 집터' 표시 안을 눌렀을 때만
     if((kind==="house"||kind==="door")&&!visiting&&!housesOf(S)[0].mat){ sel=null; houseSheet(); return; }
   }
-  if(kind==="gate"){ sel=null; walkTo(W.map,[[PATH_X+.5,MR-.5]],enterWorld); renderAct(); return; }
+  if(kind==="gate"){ sel=null; walkTo(W.map,[[PATH_X+.5,MR-.5]],goSheet); renderAct(); return; }
   if(kind==="out") return;
   sel={x,y}; SFX.tap();
   const k=x+","+y, f=fieldOf(o)[k];
@@ -1422,7 +1453,7 @@ function syncAnims(o){
   if(key===animsKey) return; animsKey=key;
   anims=(o.animals||[]).map((a,i)=>({type:a.type,i,x:PEN.x+.6+Math.random()*(PEN.w-1.2),y:PEN.y+.6+Math.random()*(PEN.h-1.2),tx:null,ty:null,wait:Math.random()*3,say:0}));
 }
-function enterRoom(i=0){ curHouse=i; floor=0; RC=8+3*Math.min(2,((housesOf(owner())[i])||{}).wing||0); where="room"; placing=null; resting=null; W.room.x=ROOM_DOOR.x+.5; W.room.y=ROOM_DOOR.y+.3; W.room.path=[]; fixBlockedFurniture(); SFX.tap(); render(); }
+function enterRoom(i=0){ if(S.ride){ if(S.ride==="car"&&visitId) parkedCar={pid:visitId,x:W.map.x,y:W.map.y}; S.ride=null; save(); } curHouse=i; floor=0; RC=8+3*Math.min(2,((housesOf(owner())[i])||{}).wing||0); where="room"; placing=null; resting=null; W.room.x=ROOM_DOOR.x+.5; W.room.y=ROOM_DOOR.y+.3; W.room.path=[]; fixBlockedFurniture(); SFX.tap(); render(); }
 function leaveRoom(){ const d=houseDoor(housesOf(owner())[curHouse],curHouse); where="map"; floor=0; W.map.x=d.x+.5; W.map.y=d.y+.8; W.map.path=[]; needSnap=true; render(); }
 
 function drawMap(c,t,time,dt){
@@ -1485,6 +1516,8 @@ function drawMap(c,t,time,dt){
   housesOf(o).forEach((hs,i)=>{ if(!hs.mat&&i>0) return; const L=lotOf(hs,i); if(!L) return; if(housePlace&&housePlace.move===i&&housePlace.x!=null) return;
     items.push({y:L.y+2,d:()=>{ const im=houseSprite(hs), hh=3.6*t*120/160, ww=3.6*t*(160+60*Math.min(2,hs.wing||0))/160;
       if(im.complete&&im.naturalWidth) c.drawImage(im,(L.x-.3)*t,(L.y+2)*t-hh+t*.15,ww,hh); }}); });
+  if(o.garage) items.push({y:o.garage.y+2,d:()=>drawGarage(c,o,t,time)});
+  if(parkedCar&&visitId&&parkedCar.pid===visitId&&!S.ride) items.push({y:parkedCar.y,d:()=>emo(c,"🚗",parkedCar.x*t+t*.6,parkedCar.y*t,t*.95)});
   if(!visitId&&housePlace&&housePlace.x!=null){ const p=housePlace, hh0=p.move!=null?S.houses[p.move]:{mat:p.mat,level:1}, w=p.move!=null?3+Math.min(2,hh0.wing||0):3, ok=canPlaceHouse(p.x,p.y,p.move!=null?p.move:-1,w);
     items.push({y:p.y+2,d:()=>{ c.fillStyle=ok?"rgba(80,200,120,.35)":"rgba(230,80,90,.35)"; c.fillRect(p.x*t,p.y*t,w*t,2*t); c.fillRect((p.x+1)*t,(p.y+2)*t,t,t);
       c.globalAlpha=.75; const im=houseSprite(hh0), hh=3.6*t*120/160, ww=3.6*t*(160+60*Math.min(2,hh0.wing||0))/160; if(im.complete&&im.naturalWidth) c.drawImage(im,(p.x-.3)*t,(p.y+2)*t-hh+t*.15,ww,hh); c.globalAlpha=1;
@@ -1515,7 +1548,7 @@ function drawMap(c,t,time,dt){
   pushPeers(items,c,t,time);
   if(!visitId){ stepStray(dt,time); drawStray(items,c,t,time); }
   stepKids(dt); drawKids(items,c,t,time);
-  const m=W.map; items.push({y:m.y,d:()=>drawChar(c,S.char,m.x*t,m.y*t,t,{walking:isMoving(m),time,name:S.nick,mine:true,id:docId})});
+  const m=W.map; items.push({y:m.y,d:()=>drawChar(c,S.char,m.x*t,m.y*t,t,{walking:isMoving(m),time,name:S.nick,mine:true,id:docId,ride:S.ride})});
   items.sort((a,b)=>a.y-b.y).forEach(i=>i.d());
   // 하늘을 나는 새
   if(!birds.length) for(let i=0;i<7;i++) birds.push({x:Math.random()*MC,y:Math.random()*MR,vx:(1+Math.random())*(Math.random()<.5?-1:1),vy:(Math.random()-.5)*.4,ph:Math.random()*6});
@@ -1859,6 +1892,7 @@ function travelTo(v,after){
   renderAct();
 }
 function travelHome(){
+  const homeV=villages().find(v=>v.p.pid===docId); if(homeV&&where!=="world"){ roadTrip(homeV); return; }
   if(where!=="world"){ const here=villages().find(v=>v.p.pid===visitId); where="world"; if(here){ W.world.x=here.x; W.world.y=here.y+1.1; } render(); }
   const home=villages().find(v=>v.p.pid===docId); if(home) travelTo(home);
 }
@@ -1893,7 +1927,7 @@ function drawWorld(c,t,time){
     if(on){ c.fillStyle="#2fae4f"; c.beginPath(); c.arc(v.x*t+w/2-4,(v.y-.6)*t,5,0,Math.PI*2); c.fill(); c.strokeStyle="#fff"; c.lineWidth=2; c.stroke(); }
   }}));
   pushPeers(items,c,t,time,.8);
-  const m=W.world; items.push({y:m.y,d:()=>drawChar(c,S.char,m.x*t,m.y*t,t*.8,{walking:isMoving(m),time,name:S.nick,mine:true,id:docId})});
+  const m=W.world; items.push({y:m.y,d:()=>drawChar(c,S.char,m.x*t,m.y*t,t*.8,{walking:isMoving(m),time,name:S.nick,mine:true,id:docId,ride:S.ride})});
   items.sort((a,b)=>a.y-b.y).forEach(i=>i.d());
 }
 
@@ -1904,7 +1938,7 @@ function loop(now){
   raf=null; if(!S||tab!=="village"||!G||!G.cv.isConnected) return;
   const dt=Math.min(.05,(now-lastT)/1000), time=now/1000; lastT=now;
   const w=W[where];
-  if(w.path.length){ const p=w.path[0], dx=p.x-w.x, dy=p.y-w.y, d=Math.hypot(dx,dy), sp=dt*(where==="world"?2.6:3.2)*(buffOn()?1.5:energy()<1?.55:1);
+  if(w.path.length){ const p=w.path[0], dx=p.x-w.x, dy=p.y-w.y, d=Math.hypot(dx,dy), sp=dt*(where==="world"?2.6:3.2)*(buffOn()?1.5:energy()<1?.55:1)*rideSpeed();
     if(d<=sp){ w.x=p.x; w.y=p.y; w.path.shift(); if(!w.path.length&&w.cb){ const cb=w.cb; w.cb=null; cb(); } }
     else { w.x+=dx/d*sp; w.y+=dy/d*sp; if(Math.random()<dt*3) tone(300+Math.random()*80,.04,{vol:.015,type:"triangle"}); } }
   stepPeers(dt); sharePosition(now);
@@ -1990,6 +2024,7 @@ function tileFree(x,y,ignore){
   const k=tileKind(x,y); if(k!=="grass"&&k!=="lot") return false;
   if(fieldOf(S)[x+","+y]) return false;
   const hi=houseAt(S,x,y); if(hi>=0&&hi!==ignore) return false;
+  if(garageAt(S,x,y)) return false;
   if(Math.floor(W.map.x)===x&&Math.floor(W.map.y)===y&&false) return false;
   return true; }
 function canPlaceHouse(x0,y0,ignore,w=3){
@@ -2076,8 +2111,8 @@ function bagSheet(tb){
   if(tb) bagTab=tb;
   const keys=Object.keys(ITEMS).filter(k=>inv(k)>0);
   const have=keys.length?`<div class="list">${keys.map(k=>{ const it=ITEMS[k], u=usesOf(k);
-      const act=it.food?`<button class="btn sm" data-eat="${k}">먹기</button>`:it.wear?`<button class="btn sm" data-wear="${k}">착용하기</button>`:it.furn?`<button class="btn sm" data-furn="${k}">집에 들이기</button>`:"";
-      const desc=it.food?`먹으면 ⚡+${FOOD_EN[k]||10}${k==="cake"?" · 30분 기운 펄펄":""}${u.length?` · ${u.slice(0,2).join("·")} 재료`:""}`:it.wear?"내 장신구로 착용해요":it.furn?"집 가구 보관함에 넣어 집에 놓아요":u.length?`${u.slice(0,4).join("·")}${u.length>4?" 등":""} 재료`:(MATS[k]?"집 짓는 재료":"시장에서 팔 수 있어요");
+      const act=it.animal?`<button class="btn sm" data-pen="${k}">우리에 넣기</button>`:it.food?`<button class="btn sm" data-eat="${k}">먹기</button>`:it.wear?`<button class="btn sm" data-wear="${k}">착용하기</button>`:it.furn?`<button class="btn sm" data-furn="${k}">집에 들이기</button>`:"";
+      const desc=it.animal?"우리가 꽉 차서 기다리는 동물이에요":it.food?`먹으면 ⚡+${FOOD_EN[k]||10}${k==="cake"?" · 30분 기운 펄펄":""}${u.length?` · ${u.slice(0,2).join("·")} 재료`:""}`:it.wear?"내 장신구로 착용해요":it.furn?"집 가구 보관함에 넣어 집에 놓아요":u.length?`${u.slice(0,4).join("·")}${u.length>4?" 등":""} 재료`:(MATS[k]?"집 짓는 재료":"시장에서 팔 수 있어요");
       return `<div class="item"><span class="ic">${it.ic}</span><span class="grow"><span class="nm">${it.name} ${inv(k)}개</span><br><span class="sub">${desc} · 🪙${it.sell}에 팔 수 있어요</span></span>${act}</div>`; }).join("")}</div>`
     :`<p class="note">가방이 비어 있어요. 수확하거나 동물을 돌보면 쌓여요.</p>`;
   const craft=`<div class="list">${RECIPES.map((r,i)=>{ const it=ITEMS[r.out], ok=Object.entries(r.need).every(([k,n])=>inv(k)>=n);
@@ -2098,6 +2133,8 @@ function bagSheet(tb){
       [660,880].forEach((f,i)=>tone(f,.15,{at:i*.12,vol:.06,type:"triangle"})); logAct(`${it.name} 먹기`); save(); closeSheet(); eating={ic:it.ic,until:Date.now()+2600}; if(tab!=="village") go("village"); focusSpeaker(docId,true); });
     w.querySelectorAll("[data-wear]").forEach(b=>b.onclick=()=>{ const k=b.dataset.wear, id=ITEMS[k].wear; addInv(k,-1);
       if(!S.owned.includes(id)) S.owned.push(id); S.char[ACC[id].slot]=id; renderTop(); SFX.tap(); logAct(`${ITEMS[k].name} 착용`); save(); toast(`${ITEMS[k].name}을(를) 착용했어요. 꾸미기에서 벗을 수 있어요`); bagSheet("have"); });
+    w.querySelectorAll("[data-pen]").forEach(b=>b.onclick=()=>{ const k=b.dataset.pen; if(S.animals.length>=MAX_ANIMALS){ toast("우리가 꽉 찼어요. 시장에서 동물을 팔면 자리가 생겨요"); SFX.no(); return; }
+      S.inv[k]=inv(k)-1; S.animals.push({type:ITEMS[k].animal,at:Date.now()}); animsKey=""; save(); voice(ITEMS[k].animal); bagSheet("have"); });
     w.querySelectorAll("[data-furn]").forEach(b=>b.onclick=()=>{ const k=b.dataset.furn, f=ITEMS[k].furn; addInv(k,-1);
       S.furnStore=S.furnStore||{}; S.furnStore[f]=(S.furnStore[f]||0)+1; SFX.tap(); save(); toast(`${ITEMS[k].name}을(를) 보관함에 넣었어요. 집 안 '가구 놓기'에서 꺼내요`); bagSheet("have"); });
   });
@@ -2146,8 +2183,7 @@ function argueSheet(fid,nick){
       logAct(`${nick}님에게 따지러 가기`);
       const target=villages().find(v=>v.p.pid===fid);
       if(!target){ toast(`${nick}님 방명록에 남겼어요`); return; }
-      if(tab!=="village") go("village"); waterOff(); enterWorld();
-      travelTo(target,()=>{ sayBubble(docId,text); toast(`${nick}님 방명록에 남겼어요`); }); }); });
+      roadTrip(target,()=>{ sayBubble(docId,text); toast(`${nick}님 방명록에 남겼어요`); }); }); });
 }
 
 // ---------- 집들이 선물 (친구가 집에 있을 때만) ----------
@@ -2193,6 +2229,84 @@ function showGiftAsk(){
       try{ await db.doc("gifts/"+g.id).update({status:g.status,reply,answeredAt:Date.now()}); }catch(e){}
       sayBubble(docId,reply); logAct(`${g.fromNick}님 선물 ${ok?"받기":"사양"}`); closeSheet(); toast(ok?`${it.ic} ${it.name} ${g.n}개를 받았어요`:"마음만 받았어요"); updateInboxBadge(); setTimeout(showGiftAsk,600); };
     w.querySelector("#gAcc").onclick=()=>answer(true); w.querySelector("#gRej").onclick=()=>answer(false); });
+}
+
+// ---------- 탈것: 자전거 · 말 · 자동차(차고 필요) ----------
+const VEHICLES={bike:{name:"자전거",ic:"🚲",price:150,speed:1.6},horse:{name:"말",ic:"🐎",price:450,speed:2},car:{name:"자동차",ic:"🚗",price:1800,speed:2.6,garage:true}};
+const GARAGE_COST={coin:300,cement:20,wood:10};
+let parkedCar=null; // 친구 마을에 세워둔 차 {pid,x,y}
+const rideSpeed=()=>S&&S.ride&&where!=="room"&&VEHICLES[S.ride]?VEHICLES[S.ride].speed:1;
+function findGarageSpot(){
+  const d=houseDoor(S.houses[0],0); let best=null, bd=1e9;
+  for(let y=2;y<MR-3;y++) for(let x=2;x<MC-3;x++){
+    let ok=true; for(let yy=y;yy<y+2&&ok;yy++) for(let xx=x;xx<x+2&&ok;xx++) if(!tileFree(xx,yy,-1)) ok=false;
+    if(!ok) continue; if(houseAt(S,x,y-1)>=0||houseAt(S,x+1,y-1)>=0||(y<=d.y&&x<=d.x+4&&x>=d.x-2)) continue;
+    const dist=Math.hypot(x-(d.x+4),y-(d.y+1)); if(dist<bd){ bd=dist; best={x,y}; } }
+  return best; }
+function garageAt(o,x,y){ const g=o&&o.garage; return !!g&&x>=g.x&&x<g.x+2&&y>=g.y&&y<g.y+2; }
+function buildGarage(){
+  if(S.garage){ toast("차고가 이미 있어요"); return; }
+  if(S.coins<GARAGE_COST.coin){ toast(`동전이 ${GARAGE_COST.coin-S.coins}개 모자라요`); SFX.no(); return; }
+  for(const m of ["cement","wood"]) if(inv(m)<GARAGE_COST[m]){ toast(`${ITEMS[m].name}이(가) ${GARAGE_COST[m]-inv(m)}개 모자라요`); SFX.no(); return; }
+  const spot=findGarageSpot(); if(!spot){ toast("차고 지을 빈 땅이 없어요"); SFX.no(); return; }
+  S.coins-=GARAGE_COST.coin; addInv("cement",-GARAGE_COST.cement); addInv("wood",-GARAGE_COST.wood);
+  S.garage=spot; logAct("차고 짓기"); save(); SFX.build(); toast("🅿 큰집 근처에 차고를 지었어요! 이제 자동차를 살 수 있어요"); render(); }
+function buyVehicle(k){
+  const V=VEHICLES[k]; S.vehicles=S.vehicles||[];
+  if(S.vehicles.includes(k)){ toast("이미 가지고 있어요"); return; }
+  if(V.garage&&!S.garage){ toast("자동차는 차고를 먼저 지어야 살 수 있어요 🅿"); SFX.no(); return; }
+  if(!pay(V.price)) return;
+  S.vehicles.push(k); logAct(`${V.name} 사기`); save(); toast(`${V.ic} ${V.name}을(를) 샀어요! 마을에서 '타기'를 눌러보세요`); render(); }
+function setRide(k){
+  const was=S.ride;
+  if(!k&&was==="car"&&visitId&&where==="map") parkedCar={pid:visitId,x:W.map.x,y:W.map.y};
+  if(k) parkedCar=null;
+  S.ride=k||null; save(); SFX.tap(); lastPresKey="";
+  toast(k?`${VEHICLES[k].ic} ${VEHICLES[k].name}에 탔어요`:was==="car"?(visitId?"🚗 여기에 차를 세웠어요":"🚗 차는 차고에 세워뒀어요"):"내렸어요");
+  render(); }
+function rideSheet(){
+  const own=(S.vehicles||[]).filter(k=>VEHICLES[k]);
+  if(!own.length){ toast("탈것은 시장 › 탈것에서 살 수 있어요"); marketMode="ride"; go("market"); return; }
+  openSheet("🚲 탈것",`<div class="list">${own.map(k=>`<button class="btn ${S.ride===k?"":"sub"}" data-ride="${k}">${VEHICLES[k].ic} ${VEHICLES[k].name} ${S.ride===k?"타는 중":"타기"} · ${VEHICLES[k].speed}배 빨라요</button>`).join("")}
+    ${S.ride?`<button class="btn sub" data-ride="">🚶 내려서 걷기</button>`:""}</div>`,
+    w=>w.querySelectorAll("[data-ride]").forEach(b=>b.onclick=()=>{ closeSheet(); setRide(b.dataset.ride||null); }));
+}
+function drawGarage(c,o,t,time){
+  const g=o.garage; if(!g) return; const x=g.x*t, y=g.y*t;
+  rr(c,x+t*.05,y+t*.35,t*1.9,t*1.55,t*.1,"#cfd3d8"); c.fillStyle="#4a6fa5"; c.beginPath(); c.moveTo(x-t*.05,y+t*.45); c.lineTo(x+t,y-t*.05); c.lineTo(x+t*2.05,y+t*.45); c.fill();
+  rr(c,x+t*.3,y+t*.85,t*1.4,t*1.05,t*.06,"#e7e9ec"); c.strokeStyle="#b3b8bf"; c.lineWidth=1.5; for(let i=1;i<5;i++){ c.beginPath(); c.moveTo(x+t*.3,y+t*(.85+i*.2)); c.lineTo(x+t*1.7,y+t*(.85+i*.2)); c.stroke(); }
+  rr(c,x+t*1.55,y+t*.05,t*.42,t*.42,t*.08,"#2f6fd6"); label(c,"P",x+t*1.76,y+t*.36,Math.max(10,t*.32),"#fff");
+  if((o.vehicles||[]).includes("car")&&o.ride!=="car"&&!(o===S&&visitId)) emo(c,"🚗",x+t,y+t*1.55,t*.95); }
+// ---------- 지도 없이 바로 친구네 가기 ----------
+function goSheet(){
+  const vs=villages().filter(v=>v.p.pid!==(visitId||docId));
+  openSheet("🚶 어디로 갈까요?",`<p class="note">${S.ride?`${VEHICLES[S.ride].ic} ${VEHICLES[S.ride].name}을(를) 타고 가요.`:"걸어서 가요. 탈것이 있으면 더 빨리 가요."}</p>
+    <div class="list">${visitId?`<button class="item inboxitem" data-go="${docId}"><span class="ic">🏠</span><span class="grow"><span class="nm">우리 마을로 돌아가기</span></span>›</button>`:""}
+    ${vs.filter(v=>v.p.pid!==docId).map(v=>{ const on=onlineIds.has(v.p.pid); return `<button class="item inboxitem" data-go="${esc(v.p.pid)}"><span class="ic">${on?"🟢":"🏡"}</span><span class="grow"><span class="nm">${esc(v.p.nick)}님 마을</span><br><span class="sub">${on?"지금 접속 중":esc(doorText(v.p)||"외출 중")}</span></span>›</button>`; }).join("")||(visitId?"":`<p class="note">아직 이웃이 없어요.</p>`)}
+    <button class="btn sub" id="goWorld">🗺 전체지도로 보기</button></div>`,w=>{
+    w.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ const t=villages().find(v=>v.p.pid===b.dataset.go); if(t) roadTrip(t); });
+    w.querySelector("#goWorld").onclick=()=>{ closeSheet(); enterWorld(); }; });
+}
+function arriveVillage(v,after){
+  if(v.p.pid===docId){ visitId=null; } else { visitId=v.p.pid; visitCache=v.p; }
+  animsKey=""; fishes=[]; where="map"; sel=null; W.map.x=PATH_X+.5; W.map.y=MR-.6; W.map.path=[]; needSnap=true;
+  walkTo(W.map,[[PATH_X+.5,DOOR.y+1.2]]);
+  if(v.p.pid!==docId) logAct(`${v.p.nick}님 마을 방문`);
+  toast(v.p.pid===docId?"우리 마을에 돌아왔어요":`${v.p.nick}님 마을에 도착했어요`); SFX.note(); render();
+  if(after) setTimeout(after,700);
+  else if(v.p.pid!==docId&&mode==="db"&&onlineIds.has(v.p.pid)) setTimeout(()=>{ if(visitId===v.p.pid) giftSheet(v.p); },900);
+}
+function roadTrip(v,after){
+  closeSheet(); if(tab!=="village"){ tab="village"; renderTabs(); } waterOff(); housePlace=null;
+  if(!S.ride&&parkedCar){ S.ride="car"; parkedCar=null; }
+  const veh=S.ride&&VEHICLES[S.ride], dur=veh?Math.round(2600/veh.speed):2600, home=v.p.pid===docId;
+  const t=$("trip"); t.innerHTML=`<div class="tripsky"></div><div class="triproad"><div class="tripdash"></div></div>
+    <div class="triptrees">${Array.from("🌳🌲🌳🌷🌲🌳🏡🌲🌳🌷".repeat(3)).map(x=>`<span>${x}</span>`).join("")}</div>
+    <div class="triprider">${veh?`<span class="tripveh">${veh.ic}</span>`:""}<span class="tripchar">${charImg(S.char)}</span></div>
+    <p class="triptext">${home?"우리 마을로 돌아가는 중…":`${esc(v.p.nick)}님 마을로 가는 중…`}</p>`;
+  t.style.setProperty("--trip",dur+"ms"); t.hidden=false; t.classList.remove("out");
+  const steps=Math.floor(dur/260); for(let i=0;i<steps;i++) tone(veh&&S.ride==="car"?140:300+(i%2)*60,.06,{at:i*.26,vol:.025,type:veh&&S.ride==="car"?"sawtooth":"triangle"});
+  setTimeout(()=>{ arriveVillage(v,after); t.classList.add("out"); setTimeout(()=>{ t.hidden=true; t.classList.remove("out"); },450); },dur);
 }
 
 // ---------- 알림 모아보기 (처음 들어올 때 아래에서 올라옴) ----------
@@ -2258,19 +2372,32 @@ document.addEventListener("touchmove",e=>{ if(!swipe) return; const t=e.touches[
 let marketMode="sell";
 function vMarket(v){
   const sellable=Object.keys(ITEMS).filter(k=>inv(k)>0);
-  v.innerHTML=`<div class="seg"><button data-m="sell" aria-pressed="${marketMode==="sell"}">팔기</button><button data-m="buy" aria-pressed="${marketMode==="buy"}">먹거리·재료 사기</button><button data-m="animal" aria-pressed="${marketMode==="animal"}">동물 데려오기</button></div>
+  v.innerHTML=`<div class="seg"><button data-m="sell" aria-pressed="${marketMode==="sell"}">팔기</button><button data-m="buy" aria-pressed="${marketMode==="buy"}">먹거리·재료 사기</button><button data-m="animal" aria-pressed="${marketMode==="animal"}">동물</button><button data-m="ride" aria-pressed="${marketMode==="ride"}">🚲 탈것</button></div>
   <div class="list" id="mlist"></div>`;
   v.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{ marketMode=b.dataset.m; SFX.tap(); render(); });
   const L=v.querySelector("#mlist");
-  if(marketMode==="sell"){
-    L.innerHTML=sellable.length?sellable.map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개 · 하나에 🪙${ITEMS[k].sell}</span></span>
+  if(marketMode==="ride"){
+    const own=S.vehicles||[];
+    L.innerHTML=`<div class="item"><span class="ic">🅿</span><span class="grow"><span class="nm">차고 짓기</span><br><span class="sub">${S.garage?"지어져 있어요":`🪙${GARAGE_COST.coin} · 시멘트 ${GARAGE_COST.cement}(가진 것 ${inv("cement")}) · 나무 ${GARAGE_COST.wood}(가진 것 ${inv("wood")}) · 자동차 주차 자리`}</span></span>${S.garage?"":`<button class="btn sm" id="garageBtn">짓기</button>`}</div>`+
+      Object.entries(VEHICLES).map(([k,V])=>`<div class="item"><span class="ic">${V.ic}</span><span class="grow"><span class="nm">${V.name}</span><br><span class="sub">${V.speed}배 빨리 다녀요${V.garage?" · 차고가 있어야 살 수 있어요":""}</span></span>
+        ${own.includes(k)?`<span class="chip">가지고 있어요</span>`:`<span class="price">🪙${V.price}</span><button class="btn sm" data-veh="${k}" ${V.garage&&!S.garage?"disabled":""}>사기</button>`}</div>`).join("")+
+      `<p class="note">산 탈것은 마을 화면의 '🚲 타기'로 타요. 친구 마을에서는 아무 데나 차를 세울 수 있어요.</p>`;
+    const gb=L.querySelector("#garageBtn"); if(gb) gb.onclick=buildGarage;
+    L.querySelectorAll("[data-veh]").forEach(b=>b.onclick=()=>buyVehicle(b.dataset.veh));
+  } else if(marketMode==="sell"){
+    const pen={}; S.animals.forEach(a=>pen[a.type]=(pen[a.type]||0)+1);
+    L.innerHTML=(sellable.length?sellable.map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개 · 하나에 🪙${ITEMS[k].sell}</span></span>
       <button class="btn sm sub" data-s1="${k}">1개</button><button class="btn sm" data-sa="${k}">모두</button></div>`).join("")
-      :`<p class="note">팔 물건이 없어요. 밭에서 수확하거나 동물을 돌봐보세요.</p>`;
+      :`<p class="note">팔 물건이 없어요. 밭에서 수확하거나 동물을 돌봐보세요.</p>`)
+      +(Object.keys(pen).length?`<h2 style="margin-top:6px">🐾 우리에 있는 동물</h2>`+Object.entries(pen).map(([ty,n])=>{ const k="a_"+ty, it=ITEMS[k]; return it?`<div class="item"><span class="ic">${it.ic}</span><span class="grow"><span class="nm">${it.name}</span><br><span class="sub">${n}마리 · 한 마리에 🪙${it.sell}</span></span><button class="btn sm sub" data-sellan="${k}">1마리 팔기</button></div>`:""; }).join("")+`<p class="note">동물은 교환 게시판에서 친구와 바꿀 수도 있어요.</p>`:"");
+    L.querySelectorAll("[data-sellan]").forEach(b=>b.onclick=()=>{ const k=b.dataset.sellan, it=ITEMS[k];
+      openSheet(`${it.name} 팔기`,`<p>${it.ic} ${it.name} 한 마리를 🪙${it.sell}에 팔까요? 판 동물은 돌아오지 않아요.</p><div class="row"><button class="btn sub grow" data-close>아니요</button><button class="btn grow" id="sellYes">팔기</button></div>`,
+        w=>w.querySelector("#sellYes").onclick=()=>{ const i=S.animals.findIndex(a=>a.type===it.animal); if(i<0) return; S.animals.splice(i,1); animsKey=""; S.coins+=it.sell; SFX.coin(); logAct(`${it.name} 팔기`); save(); closeSheet(); toast(`${it.name}를 🪙${it.sell}에 팔았어요`); render(); }); });
     const sell=(k,n)=>{ n=Math.min(n,inv(k)); if(!n) return; logAct(`${ITEMS[k].name} ${n}개 팔기`); addInv(k,-n); S.coins+=n*ITEMS[k].sell; SFX.coin(); save(); toast(`${ITEMS[k].name} ${n}개를 팔아 🪙${n*ITEMS[k].sell}`); render(); };
     L.querySelectorAll("[data-s1]").forEach(b=>b.onclick=()=>sell(b.dataset.s1,1));
     L.querySelectorAll("[data-sa]").forEach(b=>b.onclick=()=>sell(b.dataset.sa,inv(b.dataset.sa)));
   } else if(marketMode==="buy"){
-    L.innerHTML=`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
+    L.innerHTML=`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
       <span class="price">🪙${buyPrice(k)}</span><button class="btn sm sub" data-b1="${k}">1개</button>${ITEMS[k].buy?`<button class="btn sm" data-b12="${k}">12개</button>`:""}</div>`).join("");
     const buy=(k,n)=>{ if(!pay(buyPrice(k)*n)) return; logAct(`${ITEMS[k].name} ${n}개 사기`); addInv(k,n); save(); toast(`${ITEMS[k].name} ${n}개를 샀어요`); render(); };
     L.querySelector("#moreField").onclick=()=>{ if(!pay(PLOT_COST)) return; S.fieldMax++; save(); toast(`이제 밭을 ${S.fieldMax}칸까지 쓸 수 있어요`); render(); };
@@ -2374,7 +2501,7 @@ function vNeighbors(v){
   v.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
     if(siteHidden.has(b.dataset.v)){ toast("숨긴 사람의 마을이에요. 다시 보이기를 누르면 찾아갈 수 있어요"); return; }
     const target=villages().find(x=>x.p.pid===b.dataset.v); if(!target) return;
-    tab="village"; renderTabs(); waterOff(); enterWorld(); travelTo(target); });
+    roadTrip(target); });
 }
 
 async function toggleHidden(pid){
@@ -2396,7 +2523,7 @@ function vTrade(v){
   v.innerHTML=`<div class="card" style="display:flex;flex-direction:column;gap:8px">
     <h2>교환 올리기</h2>
     <span class="lbl">내가 줄 것</span>
-    <div class="row"><select id="gItem" class="grow">${TRADEABLE.map(k=>`<option value="${k}">${itemIc(k)} ${itemName(k)} (가진 것 ${k==="coin"?S.coins:inv(k)})</option>`).join("")}</select><input id="gQty" type="number" min="1" value="1" style="width:76px"></div>
+    <div class="row"><select id="gItem" class="grow">${TRADEABLE.map(k=>`<option value="${k}">${itemIc(k)} ${itemName(k)} (가진 것 ${ownedCount(k)})</option>`).join("")}</select><input id="gQty" type="number" min="1" value="1" style="width:76px"></div>
     <span class="lbl">받고 싶은 것</span>
     <div class="row"><select id="wItem" class="grow">${TRADEABLE.map(k=>`<option value="${k}" ${k==="rice"?"selected":""}>${itemIc(k)} ${itemName(k)}</option>`).join("")}</select><input id="wQty" type="number" min="1" value="1" style="width:76px"></div>
     <button class="btn" id="postOffer">게시판에 올리기</button>
