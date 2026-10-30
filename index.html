@@ -297,6 +297,12 @@ main.fullgame{padding:0!important;gap:0!important;overflow:hidden!important;posi
 .composer.ghost .btn{padding:6px 12px;font-size:13px;box-shadow:none;border-radius:999px}
 .composer.ghost.typing{background:var(--paper);border-radius:0;opacity:1;padding-block:8px}
 .lack{color:var(--berry)}
+.energy{position:relative;display:inline-flex;align-items:center;flex:none;min-width:58px;height:28px;border-radius:999px;background:#eef6e6;border:2px solid #9fd07a;overflow:hidden;font-family:var(--display);font-size:13px;padding:0;color:var(--ink)}
+.energy i{position:absolute;left:0;top:0;bottom:0;background:#c7eaa9;width:100%;transition:width .4s}
+.energy b{position:relative;font-weight:400;padding:0 8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.energy.low{border-color:var(--berry);animation:lowpulse 1.4s ease-in-out infinite}.energy.low i{background:#f8c3cd}
+.energy.buff{border-color:#f2b632}.energy.buff i{background:#ffe08a}
+@keyframes lowpulse{50%{transform:scale(1.06)}}
 /* 슬라이드 메뉴 */
 #menuBtn{position:relative}
 #menuBtn.hasdot::after{content:"";position:absolute;top:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--berry);border:2px solid #fff}
@@ -411,6 +417,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <div id="game" hidden>
   <div class="top">
     <div class="me"><span id="topChar" style="width:34px;flex:none"></span><b id="topNick"></b></div>
+    <button class="energy" id="topEnergy" aria-label="기운"><i></i><b>⚡100</b></button>
     <span class="coin" id="topCoin">0</span>
     <button class="iconbtn" id="menuBtn" aria-label="메뉴 열기">☰</button>
   </div>
@@ -496,6 +503,9 @@ Object.assign(ITEMS,{
   wood_shelf:{name:"나무 책장",ic:"📚",sell:35,craft:1,furn:"shelf"},
   clay_pot:{name:"흙 화분",ic:"🪴",sell:8,craft:1,furn:"plant"}
 });
+Object.assign(ITEMS.apple,{food:1}); Object.assign(ITEMS.pear,{food:1}); Object.assign(ITEMS.straw,{food:1});
+const FOOD_EN={straw:4,apple:6,pear:7,ricecake:10,omelet:15,juice:15,pearjuice:18,cheese:20,bread:25,cake:40};
+const EN_COST={plant:3,harvest:2,craft:4,steal:6,animal:1}, BUFF_MS=30*60000;
 const RECIPES=[
   {out:"cheese",need:{milk:2},hint:"강아지·고양이도 좋아해요"},
   {out:"bread",need:{rice:2,egg:1,milk:1}},
@@ -853,6 +863,7 @@ function migrate(){
     S.fieldMax=Math.max(6,(S.plots||[]).filter(p=>p.open).length); delete S.plots; save(); }
   S.fieldMax=S.fieldMax||6;
   if(!S.mapV2){ S.field=convertField(S.field); S.mapV2=true; save(); }
+  if(S.energy==null){ S.energy=100; S.energyAt=Date.now(); }
   if(!Array.isArray(S.houses)||!S.houses.length) S.houses=[{...(S.house||{mat:null,level:0}),lot:0}];
   S.houses.forEach((h,i)=>{ if(h.lot==null) h.lot=i; }); S.house=S.houses[0];
 }
@@ -1036,7 +1047,18 @@ function go(t){
   renderTabs(); render(); $("view").scrollTop=0;
   if(t==="chat") setTimeout(()=>{ $("view").scrollTop=1e9; },30);
 }
-function renderTop(){ $("topChar").innerHTML=charImg(S.char); $("topNick").textContent=S.nick; $("topCoin").textContent=`🪙 ${S.coins}`; }
+function renderTop(){ $("topChar").innerHTML=charImg(S.char); $("topNick").textContent=S.nick; $("topCoin").textContent=`🪙 ${S.coins}`; updateEnergyUI(); }
+// 기운: 심기·수확·만들기·서리에 쓰고, 음식·잠·시간으로 채워요 (가만히 있어도 3분에 1씩)
+function energy(){ if(!S) return 100; const e=(S.energy==null?100:S.energy)+(Date.now()-(S.energyAt||Date.now()))/180000; return Math.max(0,Math.min(100,e)); }
+function setEnergy(v){ S.energy=Math.max(0,Math.min(100,v)); S.energyAt=Date.now(); updateEnergyUI(); }
+const buffOn=()=>!!S&&(S.buffUntil||0)>Date.now();
+function useEnergy(kind,block){ if(buffOn()) return true; const n=EN_COST[kind]||0, e=energy();
+  if(block&&e<n){ toast("기운이 없어요 😪 음식을 먹거나 집 침대에서 자면 다시 힘이 나요"); SFX.no(); sayBubble(docId,"하암~ 배고파요 😪"); return false; }
+  setEnergy(e-n); if(e>=20&&e-n<20) toast("⚡ 기운이 얼마 안 남았어요. 뭘 좀 먹어요"); return true; }
+function updateEnergyUI(){ const el=$("topEnergy"); if(!el||!S) return; const e=Math.round(energy()), bf=buffOn();
+  el.querySelector("i").style.width=(bf?100:e)+"%"; el.querySelector("b").textContent=bf?`🍰 ${Math.ceil((S.buffUntil-Date.now())/60000)}분`:`⚡${e}`;
+  el.classList.toggle("low",e<20&&!bf); el.classList.toggle("buff",bf); }
+$("topEnergy").onclick=()=>{ SFX.tap(); toast(buffOn()?"🍰 기운 펄펄! 걸음이 빠르고, 수확이 두 배, 기운이 줄지 않아요":"⚡ 기운은 심기·수확·만들기·서리에 써요. 음식을 먹거나 침대에서 자면 차요"); };
 function render(){
   if(!S) return; renderTop();
   const v=$("view"); v.classList.toggle("fullgame",tab==="village");
@@ -1080,7 +1102,6 @@ function tileKind(x,y){
   if(x<0||y<0||x>=MC||y>=MR) return "out";
   if(inRect(HOUSE,x,y)) return "house";
   if(x===DOOR.x&&y===DOOR.y) return "door";
-  for(let i=1;i<LOTS.length;i++) if(inLotRect(i,x,y)) return "lot";
   if(x===PATH_X&&y===MR-1) return "gate";
   const w=isPond(x,y)||isStream(x,y);
   if(w&&isPathT(x,y)) return "bridge";
@@ -1285,9 +1306,14 @@ function renderAct(){
   const a=$("actbar"); if(!a||tab!=="village") return;
   const o=owner(), visiting=!!visitId; let h="";
   if(where==="world"){ h=isMoving(W.world)?`<span class="grow">길을 따라 걸어가는 중…</span>`:`<span class="grow">가고 싶은 마을을 누르면 걸어서 찾아가요</span>`; }
+  else if(housePlace&&where==="map"){
+    const p=housePlace, w=p.move!=null?3+Math.min(2,S.houses[p.move].wing||0):3, ok=p.x!=null&&canPlaceHouse(p.x,p.y,p.move!=null?p.move:-1,w);
+    h=`<span class="grow">${p.x==null?(p.move!=null?"📍 옮길 자리를 눌러주세요":`🏗 ${MATS[p.mat]} 지을 자리를 눌러주세요`):ok?"여기에 지을까요?":"여기엔 지을 수 없어요. 풀밭을 골라주세요 (밭·나무·물·길 X)"}</span>
+      ${p.x!=null&&ok?`<button class="btn sm" id="placeHouse">${p.move!=null?"여기로 옮기기":`여기에 짓기 (${ITEMS[p.mat].name} ${p.cost})`}</button>`:""}<button class="btn sm sub" id="cancelHouse">취소</button>`;
+  }
   else if(where==="room"){
     if(placing){ const def=FURN[placing.k]; h=`<span class="grow">${def.name}을(를) 놓을 ${def.wall?"벽 쪽 가장자리":"바닥"}를 눌러주세요${def.wall?"":` · 방향 ${"⬆➡⬇⬅"[placing.r||0]}`}</span>${def.wall?"":`<button class="btn sm sub" id="rotPlace">↻ 돌리기</button>`}<button class="btn sm sub" id="cancelPlace">그만두기</button>`; }
-    else if(resting) h=`<span class="grow">${resting==="bed"?"침대에 누워 쉬는 중 💤":"편하게 앉아 쉬는 중"}</span><button class="btn sm sub" id="getUp">일어나기</button>`;
+    else if(resting) h=`<span class="grow">${resting==="bed"?"침대에서 자는 중 💤 기운이 빨리 차요":"편하게 앉아 쉬는 중 · 기운이 조금씩 차요"}</span><button class="btn sm sub" id="getUp">일어나기</button>`;
     else h=`${visiting?"":`<button class="btn sm" id="addFurn">🛋 가구 놓기</button>`}<span class="grow"></span>${floor>0?`<button class="btn sm sub" id="goDown">⬇ 내려가기</button>`:`<button class="btn sm sub" id="leaveRoom">🚪 밖으로</button>`}`;
   }
   else if(sel&&!isMoving(W.map)){
@@ -1305,6 +1331,8 @@ function renderAct(){
   const b=id=>a.querySelector("#"+id);
   a.querySelectorAll("[data-plant]").forEach(x=>x.onclick=()=>plantAt(sel.x,sel.y,x.dataset.plant));
   if(b("harvest")) b("harvest").onclick=()=>harvestAt(sel.x,sel.y);
+  if(b("placeHouse")) b("placeHouse").onclick=()=>confirmHousePlace();
+  if(b("cancelHouse")) b("cancelHouse").onclick=()=>{ housePlace=null; renderAct(); toast("집 짓기를 그만뒀어요"); };
   if(b("steal")) b("steal").onclick=()=>stealAt(sel.x,sel.y);
   if(b("dig")) b("dig").onclick=()=>{ delete S.field[sel.x+","+sel.y]; sel=null; save(); renderAct(); };
   if(b("addFurn")) b("addFurn").onclick=furnSheet;
@@ -1326,9 +1354,15 @@ function tapMap(fx,fy){
   for(let i=0;i<anims.length;i++){ const a=anims[i]; if(Math.hypot(a.x-fx,a.y-fy)<.6){
     walkTo(W.map,[[Math.min(Math.max(fx,0.5),PEN.x-.4),fy]]); if(!visiting) animalTap(i); else voice(a.type); a.say=1.6; return; } }
   const kind=tileKind(x,y);
-  const hi=houseAt(o,x,y);
-  if(hi>=0){ const d=houseDoor(housesOf(o)[hi],hi); sel=null; walkTo(W.map,[[d.x+.5,d.y+.5]],()=>enterRoom(hi)); renderAct(); return; }
-  if(kind==="house"||kind==="door"||kind==="lot"){ if(!visiting){ sel=null; houseSheet(); } return; }
+  if(housePlace&&!visiting){ housePlace.x=Math.floor(fx)-1; housePlace.y=Math.floor(fy)-1; SFX.tap(); renderAct(); return; }
+  // 누른 칸에 작물이 있으면 작물이 먼저 (집 창이 뜨지 않게)
+  const hasCrop=!!fieldOf(o)[x+","+y];
+  if(!hasCrop){
+    const hi=houseAt(o,x,y);
+    if(hi>=0){ const d=houseDoor(housesOf(o)[hi],hi); sel=null; walkTo(W.map,[[d.x+.5,d.y+.5]],()=>enterRoom(hi)); renderAct(); return; }
+    // 집 창은 '빈 집터' 표시 안을 눌렀을 때만
+    if((kind==="house"||kind==="door")&&!visiting&&!housesOf(S)[0].mat){ sel=null; houseSheet(); return; }
+  }
   if(kind==="gate"){ sel=null; walkTo(W.map,[[PATH_X+.5,MR-.5]],enterWorld); renderAct(); return; }
   if(kind==="out") return;
   sel={x,y}; SFX.tap();
@@ -1338,20 +1372,21 @@ function tapMap(fx,fy){
 }
 function plantAt(x,y,ck){
   const c=CROPS[ck]; if(S.coins<c.cost){ toast(`동전이 ${c.cost-S.coins}개 모자라요`); SFX.no(); return; }
+  if(!useEnergy("plant",true)) return;
   S.coins-=c.cost; S.field=S.field||{}; S.field[x+","+y]={crop:ck,at:Date.now(),dur:c.time};
   SFX.plant(); puff(x+.5,y+.5,"#8a5a3b"); logAct(`${c.name} 심기`); save(); sel=null; renderTop(); renderAct(); toast(`${c.name}을(를) 심었어요`);
 }
 function harvestAt(x,y){
   const k=x+","+y, f=S.field[k]; if(!f||plotState(f).stage!=="ready") return;
-  const c=CROPS[f.crop]; addInv(f.crop,c.yield); if(f.crop==="rice") addInv("hay",2);
+  const c=CROPS[f.crop], yld=c.yield*(buffOn()?2:1); useEnergy("harvest"); addInv(f.crop,yld); if(f.crop==="rice") addInv("hay",2);
   if(c.regrow){ f.at=Date.now(); f.dur=c.regrow; } else delete S.field[k];
-  sel=null; SFX.harvest(); puff(x+.5,y+.4,"#ffd84d"); logAct(`${c.item||c.name} 수확`); save(); toast(`${c.item||c.name} ${c.yield}개 수확!${f.crop==="rice"?" 지푸라기 2개도 생겼어요":""}`);
+  sel=null; SFX.harvest(); puff(x+.5,y+.4,"#ffd84d"); logAct(`${c.item||c.name} 수확`); save(); toast(`${c.item||c.name} ${yld}개 수확!${buffOn()?" 🍰 두 배!":""}${f.crop==="rice"?" 지푸라기 2개도 생겼어요":""}`);
   render();
 }
 function animalTap(i){
   const a=S.animals[i]; if(!a) return; const A=ANIMALS[a.type];
   voice(a.type);
-  if(animalReady(a)){
+  if(animalReady(a)){ useEnergy("animal");
     if(A.product==="coin"){ const n=5+Math.floor(Math.random()*11); S.coins+=n; SFX.coin(); toast(`${A.name}가 동전 ${n}개를 물어왔어요`); }
     else { addInv(A.product,1); SFX.harvest(); toast(`${ITEMS[A.product].name} 1개를 얻었어요`); }
     a.at=Date.now(); save(); render();
@@ -1425,12 +1460,14 @@ function drawMap(c,t,time,dt){
       c.beginPath(); c.ellipse((f.x+f.dir*(j-.5)*.8*1)*t,f.y*t,t*(.12+age*.6),t*(.05+age*.22),0,0,Math.PI*2); c.stroke(); } }); });
   // 그릴 것들 (아래에 있는 게 앞으로)
   const items=[];
-  housesOf(o).forEach((hs,i)=>{ const L=LOTS[hs.lot!=null?hs.lot:i]; if(!L) return;
+  housesOf(o).forEach((hs,i)=>{ if(!hs.mat&&i>0) return; const L=lotOf(hs,i); if(!L) return; if(housePlace&&housePlace.move===i&&housePlace.x!=null) return;
     items.push({y:L.y+2,d:()=>{ const im=houseSprite(hs), hh=3.6*t*120/160, ww=3.6*t*(160+60*Math.min(2,hs.wing||0))/160;
       if(im.complete&&im.naturalWidth) c.drawImage(im,(L.x-.3)*t,(L.y+2)*t-hh+t*.15,ww,hh); }}); });
-  if(!visitId&&housesOf(S)[0].mat) LOTS.forEach((L,i)=>{ if(i===0||housesOf(S).some((h,j)=>(h.lot!=null?h.lot:j)===i)) return;
-    items.push({y:L.y+2,d:()=>{ c.setLineDash([5,4]); c.strokeStyle="rgba(122,90,58,.7)"; c.lineWidth=2; c.strokeRect(L.x*t+4,L.y*t+4,3*t-8,2*t-8); c.setLineDash([]);
-      label(c,"🔨 집 지을 곳",(L.x+1.5)*t,(L.y+1.15)*t,Math.max(11,t*.3),"#6f4a2e"); }}); });
+  if(!visitId&&housePlace&&housePlace.x!=null){ const p=housePlace, hh0=p.move!=null?S.houses[p.move]:{mat:p.mat,level:1}, w=p.move!=null?3+Math.min(2,hh0.wing||0):3, ok=canPlaceHouse(p.x,p.y,p.move!=null?p.move:-1,w);
+    items.push({y:p.y+2,d:()=>{ c.fillStyle=ok?"rgba(80,200,120,.35)":"rgba(230,80,90,.35)"; c.fillRect(p.x*t,p.y*t,w*t,2*t); c.fillRect((p.x+1)*t,(p.y+2)*t,t,t);
+      c.globalAlpha=.75; const im=houseSprite(hh0), hh=3.6*t*120/160, ww=3.6*t*(160+60*Math.min(2,hh0.wing||0))/160; if(im.complete&&im.naturalWidth) c.drawImage(im,(p.x-.3)*t,(p.y+2)*t-hh+t*.15,ww,hh); c.globalAlpha=1;
+      const lt=ok?"✅ 여기에 지을 수 있어요":"❌ 여기엔 안 돼요", fs=Math.max(12,t*.32); c.font=`${fs}px Jua,sans-serif`; const hw=c.measureText(lt).width/2+6;
+      label(c,lt,Math.max(camOX/cam.zoom*0+cam.x*t+hw,Math.min((p.x+w/2)*t,cam.x*t+G.w-hw)),Math.max(p.y*t-6,cam.y*t+fs+4),fs,ok?"#2f7d3a":"#c0392b"); }}); }
   TREE_SET.forEach(key=>{ const [x,y]=key.split(",").map(Number); if(x<x0-1||x>x1||y<y0-1||y>y1+1) return; const h=hash2(y,x);
     items.push({y:y+1,d:()=>{ const px=x*t, py=y*t, sway=Math.sin(time*1.2+x)*t*.02;
       c.fillStyle="rgba(0,0,0,.15)"; c.beginPath(); c.ellipse(px+t/2,py+t*.92,t*.36,t*.1,0,0,Math.PI*2); c.fill();
@@ -1825,10 +1862,11 @@ function loop(now){
   raf=null; if(!S||tab!=="village"||!G||!G.cv.isConnected) return;
   const dt=Math.min(.05,(now-lastT)/1000), time=now/1000; lastT=now;
   const w=W[where];
-  if(w.path.length){ const p=w.path[0], dx=p.x-w.x, dy=p.y-w.y, d=Math.hypot(dx,dy), sp=dt*(where==="world"?2.6:3.2);
+  if(w.path.length){ const p=w.path[0], dx=p.x-w.x, dy=p.y-w.y, d=Math.hypot(dx,dy), sp=dt*(where==="world"?2.6:3.2)*(buffOn()?1.5:energy()<1?.55:1);
     if(d<=sp){ w.x=p.x; w.y=p.y; w.path.shift(); if(!w.path.length&&w.cb){ const cb=w.cb; w.cb=null; cb(); } }
     else { w.x+=dx/d*sp; w.y+=dy/d*sp; if(Math.random()<dt*3) tone(300+Math.random()*80,.04,{vol:.015,type:"triangle"}); } }
   stepPeers(dt); sharePosition(now);
+  if(buffOn()&&Math.random()<dt*5){ const me=W[where]; sparkles.push({x:me.x+(Math.random()-.5)*.8,y:me.y-.4-Math.random()*.6,vx:(Math.random()-.5)*.6,vy:-.8,life:1,color:"#ffd84d"}); }
   const c=G.ctx, t=G.t;
   c.clearRect(0,0,G.w,G.h);
   const drawSparklesZ=tt=>{ sparkles=sparkles.filter(s=>(s.life-=dt*1.6)>0);
@@ -1892,17 +1930,51 @@ function guestbookSheet(p){
 const upCost=lv=>12+8*lv, wingCost=w=>14+10*w, FENCE_COST=6, newHouseCost=n=>12*(n+1);
 function housesOf(o){ if(o&&Array.isArray(o.houses)&&o.houses.length) return o.houses; const h=(o&&o.house)||{mat:null,level:0}; return [{...h,lot:0}]; }
 const floorsOf=(o,i)=>Math.max(1,((housesOf(o)[i]||{}).level)||1);
-function houseDoor(h,i){ const L=LOTS[(h&&h.lot!=null)?h.lot:i]||LOTS[0]; return {x:L.x+1,y:L.y+2}; }
+const MAX_HOUSES=4;
+// 집 자리: 직접 고른 자리(pos)가 있으면 그곳, 없으면 예전 집터
+function lotOf(h,i){ return (h&&h.pos)||LOTS[(h&&h.lot!=null)?h.lot:i]||LOTS[0]; }
+function houseDoor(h,i){ const L=lotOf(h,i); return {x:L.x+1,y:L.y+2}; }
 function houseAt(o,x,y){ const hs=housesOf(o);
-  for(let i=0;i<hs.length;i++){ const h=hs[i]; if(!h.mat) continue; const L=LOTS[h.lot!=null?h.lot:i]; if(!L) continue;
+  for(let i=0;i<hs.length;i++){ const h=hs[i]; if(!h.mat) continue; const L=lotOf(h,i); if(!L) continue;
     const w=3+Math.min(2,h.wing||0); if(x>=L.x&&x<L.x+w&&y>=L.y&&y<L.y+2) return i;
     const d=houseDoor(h,i); if(x===d.x&&y===d.y) return i; }
   return -1; }
+// 집을 지을 수 있는 칸인지 (풀밭, 밭·나무·물·길·다른 집 없음)
+function tileFree(x,y,ignore){
+  if(x<1||y<1||x>MC-2||y>MR-2) return false;
+  const k=tileKind(x,y); if(k!=="grass"&&k!=="lot") return false;
+  if(fieldOf(S)[x+","+y]) return false;
+  const hi=houseAt(S,x,y); if(hi>=0&&hi!==ignore) return false;
+  if(Math.floor(W.map.x)===x&&Math.floor(W.map.y)===y&&false) return false;
+  return true; }
+function canPlaceHouse(x0,y0,ignore,w=3){
+  for(let yy=y0;yy<y0+2;yy++) for(let xx=x0;xx<x0+w;xx++) if(!tileFree(xx,yy,ignore)) return false;
+  const dx=x0+1, dy=y0+2, dk=tileKind(dx,dy);
+  if(["water","tree","pen","house","out"].includes(dk)) return false;
+  const hi=houseAt(S,dx,dy); if(hi>=0&&hi!==ignore) return false;
+  return true; }
+let housePlace=null; // {mat,cost} 새 집 / {move:i} 옮기기, x·y는 고른 자리
+function startHousePlace(p){
+  housePlace=p; closeSheet();
+  if(tab!=="village") go("village");
+  if(visitId){ toast("내 마을에서만 집을 지을 수 있어요. 집으로 돌아가서 다시 해주세요"); housePlace=null; return; }
+  if(where!=="map"){ if(where==="room") leaveRoom(); else { where="map"; needSnap=true; render(); } }
+  cam.zoom=Math.min(cam.zoom,.8); clampCam(); sel=null; renderAct();
+  toast(p.move!=null?"옮길 자리를 눌러주세요":"집 지을 자리를 눌러주세요"); }
+function confirmHousePlace(){
+  const p=housePlace; if(!p||p.x==null) return;
+  const ig=p.move!=null?p.move:-1, w=p.move!=null?3+Math.min(2,S.houses[p.move].wing||0):3;
+  if(!canPlaceHouse(p.x,p.y,ig,w)){ toast("여기엔 지을 수 없어요"); SFX.no(); return; }
+  if(p.move!=null){ S.houses[p.move].pos={x:p.x,y:p.y}; housePlace=null; logAct(`${houseName(p.move)} 옮기기`); save(); SFX.build(); puff(p.x+1.5,p.y+1,"#ffd84d"); renderAct(); toast("집을 옮겼어요!"); return; }
+  if(S.houses.length>=MAX_HOUSES){ housePlace=null; renderAct(); return; }
+  if(!spend(p.mat,p.cost)){ return; }
+  S.houses.push({mat:p.mat,level:1,wing:0,fence:false,pos:{x:p.x,y:p.y}}); S.house=S.houses[0];
+  housePlace=null; logAct(`새 ${MATS[p.mat]} 짓기`); save(); SFX.build(); puff(p.x+1.5,p.y+1,"#ffd84d"); renderAct(); toast(`${S.houses.length}번째 집으로 ${MATS[p.mat]}을 지었어요!`); }
 function houseName(i){ return i===0?"큰집":`${i+1}번째 집`; }
 function houseTitle(h){ return h.mat?`${MATS[h.mat]} · ${h.level||1}층${h.wing?` · 옆으로 +${h.wing}칸`:""}${h.fence?" · 울타리":""}`:"빈 집터"; }
 function spend(m,n){ if(inv(m)<n){ toast(`${ITEMS[m].name}이(가) ${n-inv(m)}개 모자라요. 시장에서 살 수 있어요`); SFX.no(); return false; } addInv(m,-n); return true; }
 function houseSheet(){
-  const hs=S.houses, used=new Set(hs.map((h,i)=>h.lot!=null?h.lot:i)), freeLot=LOTS.findIndex((_,i)=>!used.has(i));
+  const hs=S.houses, canMore=hs.length<MAX_HOUSES;
   const matBtn=(attr,m,cost)=>`<button class="btn sm sub" ${attr}>${ITEMS[m].ic} ${MATS[m]}<br><small>${ITEMS[m].name} ${cost} · 가진 것 ${inv(m)}</small></button>`;
   const parts=hs.map((h,i)=>{
     if(!h.mat) return `<div class="card hcard"><div class="hprev">${houseSVG(h)}</div><b>첫 집 짓기</b><div class="matgrid">${Object.keys(MATS).map(m=>matBtn(`data-new0="${m}"`,m,BUILD_COST)).join("")}</div></div>`;
@@ -1913,17 +1985,22 @@ function houseSheet(){
         <button class="btn sm" data-wing="${i}" ${wg>=2?"disabled":""}>➡ 옆으로 넓히기<br><small>${wg>=2?"가장 넓어요":`${ITEMS[m].name} ${wingCost(wg)}`}</small></button>
         <button class="btn sm sub" data-fence="${i}">${h.fence?"울타리 걷기":"🪵 울타리 치기"}<br><small>${h.fence?"다시 칠 수 있어요":`나무 ${FENCE_COST}`}</small></button>
       </div>
-      <details><summary>다른 재료로 바꿔 짓기 (층·넓이는 그대로)</summary><div class="matgrid">${Object.keys(MATS).filter(x=>x!==m).map(x=>matBtn(`data-remat="${i}" data-m="${x}"`,x,BUILD_COST*lv)).join("")}</div></details></div>`;
+      ${i>0?`<button class="btn sm sub" data-move="${i}">📍 다른 자리로 옮기기</button>`:""}<details><summary>다른 재료로 바꿔 짓기 (층·넓이는 그대로)</summary><div class="matgrid">${Object.keys(MATS).filter(x=>x!==m).map(x=>matBtn(`data-remat="${i}" data-m="${x}"`,x,BUILD_COST*lv)).join("")}</div></details></div>`;
   }).join("");
-  const more=hs[0].mat?(freeLot>=0?`<div class="card hcard"><b>🏗 새 집 하나 더 짓기 (${hs.length+1}번째 집)</b><p class="note">마을의 다른 집터에 지어요. 나무집이 있어도 흙집, 시멘트집, 지푸라기집을 따로 지을 수 있고, 집마다 따로 꾸밀 수 있어요.</p><div class="matgrid">${Object.keys(MATS).map(m=>matBtn(`data-new="${m}"`,m,newHouseCost(hs.length))).join("")}</div></div>`:`<p class="note">집터를 모두 썼어요. 있는 집을 올리거나 넓혀보세요.</p>`):"";
+  const more=hs[0].mat?(canMore?`<div class="card hcard"><b>🏗 새 집 하나 더 짓기 (${hs.length+1}번째 집)</b><p class="note">재료를 고르면 마을 지도가 나와요. 지을 자리를 직접 눌러 골라요. 나무집이 있어도 흙집, 시멘트집, 지푸라기집을 따로 지을 수 있고, 집마다 따로 꾸밀 수 있어요.</p><div class="matgrid">${Object.keys(MATS).map(m=>matBtn(`data-new="${m}"`,m,newHouseCost(hs.length))).join("")}</div></div>`:`<p class="note">집은 ${MAX_HOUSES}채까지 지을 수 있어요. 있는 집을 올리거나 넓혀보세요.</p>`):"";
   openSheet("🔨 집 짓기 · 넓히기",`${parts}${more}<p class="note">재료는 시장 › 먹거리·재료 사기에서 살 수 있어요. 지푸라기는 벼를 수확할 때도 생겨요.</p>`,w=>{
     const done=(msg,act)=>{ S.house=S.houses[0]; logAct(act); save(); SFX.build(); render(); houseSheet(); toast(msg); };
     w.querySelectorAll("[data-new0]").forEach(b=>b.onclick=()=>{ const m=b.dataset.new0; if(!spend(m,BUILD_COST)) return; Object.assign(hs[0],{mat:m,level:1,wing:0,fence:false,lot:0}); done(`${MATS[m]}을 지었어요!`,`${MATS[m]} 짓기`); });
     w.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>{ const h=hs[+b.dataset.up], lv=h.level||1; if(!spend(h.mat,upCost(lv))) return; h.level=lv+1; done(`${h.level}층으로 올렸어요! 집 안 계단으로 올라가 보세요`,`${houseName(+b.dataset.up)} ${h.level}층 올리기`); });
-    w.querySelectorAll("[data-wing]").forEach(b=>b.onclick=()=>{ const h=hs[+b.dataset.wing], wg=h.wing||0; if(wg>=2) return; if(!spend(h.mat,wingCost(wg))) return; h.wing=wg+1; done("옆으로 넓혔어요! 집 안도 넓어졌어요",`${houseName(+b.dataset.wing)} 넓히기`); });
+    w.querySelectorAll("[data-wing]").forEach(b=>b.onclick=()=>{ const h=hs[+b.dataset.wing], wg=h.wing||0; if(wg>=2) return; const hi=+b.dataset.wing, L=lotOf(h,hi);
+      for(let yy=L.y;yy<L.y+2;yy++){ const xx=L.x+3+wg; if(!tileFree(xx,yy,hi)&&!(hi===0&&tileKind(xx,yy)==="grass"&&!fieldOf(S)[xx+","+yy])){ toast("집 오른쪽에 밭이나 나무가 있어서 넓힐 수 없어요"); SFX.no(); return; } }
+      if(!spend(h.mat,wingCost(wg))) return; h.wing=wg+1; done("옆으로 넓혔어요! 집 안도 넓어졌어요",`${houseName(+b.dataset.wing)} 넓히기`); });
     w.querySelectorAll("[data-fence]").forEach(b=>b.onclick=()=>{ const h=hs[+b.dataset.fence]; if(h.fence){ h.fence=false; done("울타리를 걷었어요","울타리 걷기"); return; } if(!spend("wood",FENCE_COST)) return; h.fence=true; done("울타리를 쳤어요","울타리 치기"); });
     w.querySelectorAll("[data-remat]").forEach(b=>b.onclick=()=>{ const h=hs[+b.dataset.remat], m=b.dataset.m; if(!spend(m,BUILD_COST*(h.level||1))) return; h.mat=m; done(`${MATS[m]}으로 바꿔 지었어요`,`${MATS[m]}으로 바꾸기`); });
-    w.querySelectorAll("[data-new]").forEach(b=>b.onclick=()=>{ const m=b.dataset.new; if(freeLot<0||!spend(m,newHouseCost(hs.length))) return; hs.push({mat:m,level:1,wing:0,fence:false,lot:freeLot}); done(`${hs.length}번째 집으로 ${MATS[m]}을 지었어요!`,`새 ${MATS[m]} 짓기`); });
+    w.querySelectorAll("[data-new]").forEach(b=>b.onclick=()=>{ const m=b.dataset.new, cost=newHouseCost(hs.length); if(!canMore) return;
+      if(inv(m)<cost){ toast(`${ITEMS[m].name}이(가) ${cost-inv(m)}개 모자라요. 시장에서 살 수 있어요`); SFX.no(); return; }
+      startHousePlace({mat:m,cost}); });
+    w.querySelectorAll("[data-move]").forEach(b=>b.onclick=()=>startHousePlace({move:+b.dataset.move}));
   });
 }
 
@@ -1935,21 +2012,24 @@ function bagSheet(tb){
   const keys=Object.keys(ITEMS).filter(k=>inv(k)>0);
   const have=keys.length?`<div class="list">${keys.map(k=>{ const it=ITEMS[k], u=usesOf(k);
       const act=it.food?`<button class="btn sm" data-eat="${k}">먹기</button>`:it.wear?`<button class="btn sm" data-wear="${k}">착용하기</button>`:it.furn?`<button class="btn sm" data-furn="${k}">집에 들이기</button>`:"";
-      const desc=it.food?"먹으면 기분이 좋아져요":it.wear?"내 장신구로 착용해요":it.furn?"집 가구 보관함에 넣어 집에 놓아요":u.length?`${u.slice(0,4).join("·")}${u.length>4?" 등":""} 재료`:(MATS[k]?"집 짓는 재료":"시장에서 팔 수 있어요");
+      const desc=it.food?`먹으면 ⚡+${FOOD_EN[k]||10}${k==="cake"?" · 30분 기운 펄펄":""}${u.length?` · ${u.slice(0,2).join("·")} 재료`:""}`:it.wear?"내 장신구로 착용해요":it.furn?"집 가구 보관함에 넣어 집에 놓아요":u.length?`${u.slice(0,4).join("·")}${u.length>4?" 등":""} 재료`:(MATS[k]?"집 짓는 재료":"시장에서 팔 수 있어요");
       return `<div class="item"><span class="ic">${it.ic}</span><span class="grow"><span class="nm">${it.name} ${inv(k)}개</span><br><span class="sub">${desc} · 🪙${it.sell}에 팔 수 있어요</span></span>${act}</div>`; }).join("")}</div>`
     :`<p class="note">가방이 비어 있어요. 수확하거나 동물을 돌보면 쌓여요.</p>`;
   const craft=`<div class="list">${RECIPES.map((r,i)=>{ const it=ITEMS[r.out], ok=Object.entries(r.need).every(([k,n])=>inv(k)>=n);
-      const kind=it.food?"먹거리":it.wear?"장신구":"가구";
+      const kind=it.food?`먹거리 ⚡+${FOOD_EN[r.out]||10}`:it.wear?"장신구":"가구";
       return `<div class="item"><span class="ic">${it.ic}</span><span class="grow"><span class="nm">${it.name}</span> <span class="sub">(${kind})</span><br><span class="sub">${Object.entries(r.need).map(([k,n])=>`<span class="${inv(k)>=n?"":"lack"}">${ITEMS[k].ic}${ITEMS[k].name} ${inv(k)}/${n}</span>`).join(" ")}${r.hint?` · ${r.hint}`:""}</span></span><button class="btn sm" data-craft="${i}" ${ok?"":"disabled"}>만들기</button></div>`; }).join("")}</div>`;
   openSheet("🎒 가방",`<div class="seg"><button data-bt="have" aria-pressed="${bagTab==="have"}">가진 것</button><button data-bt="craft" aria-pressed="${bagTab==="craft"}">만들기</button></div>${bagTab==="have"?have:craft}
+    <p class="note">⚡ 기운 ${Math.round(energy())}/100 · 만들 때마다 기운이 ${EN_COST.craft}씩 들어요.</p>
     <p class="note">재료와 만든 물건은 시장에서 팔거나 교환 게시판에서 친구와 바꿀 수 있어요. 받은 친구도 똑같이 쓰거나 팔 수 있어요.</p>`,w=>{
     w.querySelectorAll("[data-bt]").forEach(b=>b.onclick=()=>{ SFX.tap(); bagSheet(b.dataset.bt); });
     w.querySelectorAll("[data-craft]").forEach(b=>b.onclick=()=>{ const r=RECIPES[+b.dataset.craft], it=ITEMS[r.out];
       if(!Object.entries(r.need).every(([k,n])=>inv(k)>=n)) return;
+      if(!useEnergy("craft",true)) return;
       Object.entries(r.need).forEach(([k,n])=>addInv(k,-n)); addInv(r.out,1);
       [523,659,784,1046].forEach((f,i)=>tone(f,.16,{at:i*.07,vol:.06,type:"triangle"})); logAct(`${it.name} 만들기`); save(); toast(`${it.ic} ${it.name}을(를) 만들었어요!`); bagSheet("craft"); });
-    w.querySelectorAll("[data-eat]").forEach(b=>b.onclick=()=>{ const k=b.dataset.eat, it=ITEMS[k]; addInv(k,-1);
-      sayBubble(docId,`냠냠 ${it.ic} 맛있다!`); const me=W[where]; for(let i=0;i<8;i++) sparkles.push({x:me.x,y:me.y-.6,vx:(Math.random()-.5)*1.6,vy:-Math.random()*1.8,life:1,color:"#ff7fa0"});
+    w.querySelectorAll("[data-eat]").forEach(b=>b.onclick=()=>{ const k=b.dataset.eat, it=ITEMS[k], en=FOOD_EN[k]||10; addInv(k,-1);
+      setEnergy(energy()+en); if(k==="cake"){ S.buffUntil=Date.now()+BUFF_MS; updateEnergyUI(); toast("🍰 30분 동안 기운 펄펄! 걸음이 빨라지고, 수확이 두 배, 기운이 줄지 않아요"); }
+      sayBubble(docId,`냠냠 ${it.ic} ⚡+${en}`); const me=W[where]; for(let i=0;i<8;i++) sparkles.push({x:me.x,y:me.y-.6,vx:(Math.random()-.5)*1.6,vy:-Math.random()*1.8,life:1,color:"#ff7fa0"});
       [660,880].forEach((f,i)=>tone(f,.15,{at:i*.12,vol:.06,type:"triangle"})); logAct(`${it.name} 먹기`); save(); bagSheet("have"); });
     w.querySelectorAll("[data-wear]").forEach(b=>b.onclick=()=>{ const k=b.dataset.wear, id=ITEMS[k].wear; addInv(k,-1);
       if(!S.owned.includes(id)) S.owned.push(id); S.char[ACC[id].slot]=id; renderTop(); SFX.tap(); logAct(`${ITEMS[k].name} 착용`); save(); toast(`${ITEMS[k].name}을(를) 착용했어요. 꾸미기에서 벗을 수 있어요`); bagSheet("have"); });
@@ -1963,6 +2043,7 @@ function siren(){ [0,.36,.72].forEach(a=>{ tone(920,.3,{at:a,type:"square",vol:.
 async function stealAt(x,y){
   const o=owner(), k=x+","+y, f=fieldOf(o)[k]; if(!visitId||!f||plotState(f).stage!=="ready") return;
   const c=CROPS[f.crop], n=c.yield, key=visitId+"|"+k+"|"+f.at; if(myTakes.has(key)) return;
+  if(!useEnergy("steal",true)) return;
   const rec={to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:f.crop,n,key:k,plantedAt:f.at,at:Date.now(),applied:false,seen:false};
   myTakes.set(key,rec); addInv(f.crop,n); if(f.crop==="rice") addInv("hay",2);
   sel=null; save(); SFX.harvest(); siren(); puff(x+.5,y+.4,"#ffd84d"); sayBubble(docId,"🚓 삐뽀삐뽀!");
@@ -2333,8 +2414,12 @@ function vChat(v){
 // =====================================================================
 const grownSeen={};
 let nextCry=Date.now()+15000;
+let sleepTick=0, yawnAt=0;
 setInterval(()=>{
   if(!S) return;
+  if(tab==="village"&&where==="room"&&!visitId&&resting){ setEnergy(energy()+(resting==="bed"?1.2:.4)); if(++sleepTick%10===0) save(); }
+  if(energy()<1&&!buffOn()&&isMoving(W[where])&&Date.now()>yawnAt){ yawnAt=Date.now()+7000; sayBubble(docId,"하암~ 배고파요 😪"); }
+  updateEnergyUI();
   Object.entries(S.field||{}).forEach(([i,p])=>{
     const key=p.crop+":"+p.at, st=plotState(p);
     if(st.stage!=="ready") grownSeen[i]="g"+key;
