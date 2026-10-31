@@ -452,7 +452,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-8</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-9</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -999,6 +999,7 @@ const MONTH=30*864e5;
 function isAway(p){ return !!p&&(p.away===true||(Date.now()-(p.updatedAt||p.createdAt||Date.now()))>MONTH); }
 const awayText=p=>`${p.nick}${josa(p.nick,"은","는")} 잠시 여행을 떠났어요. 🏝`;
 function startGame(){
+  migrate(); // 새로 만든 마을도 집 목록·기운 등 기본값을 갖추게
   S.away=false; S.sign=null; inboxShown=false; save(); stray=null; strayCheckAt=0; needSnap=true; // 들어오면 여행에서 돌아옴, 마지막 접속 시각도 갱신
   show("game"); renderTop(); go("village");
   const m=ls.get("dv:music"); setMusic(m===null?true:!!m);
