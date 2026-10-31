@@ -452,7 +452,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-9</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-11</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -999,6 +999,7 @@ const MONTH=30*864e5;
 function isAway(p){ return !!p&&(p.away===true||(Date.now()-(p.updatedAt||p.createdAt||Date.now()))>MONTH); }
 const awayText=p=>`${p.nick}${josa(p.nick,"은","는")} 잠시 여행을 떠났어요. 🏝`;
 function startGame(){
+  chatSince=Date.now(); chatSeen=chatSince;
   migrate(); // 새로 만든 마을도 집 목록·기운 등 기본값을 갖추게
   S.away=false; S.sign=null; inboxShown=false; save(); stray=null; strayCheckAt=0; needSnap=true; // 들어오면 여행에서 돌아옴, 마지막 접속 시각도 갱신
   show("game"); renderTop(); go("village");
@@ -1033,6 +1034,8 @@ function subscribe(){
     myNotes=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at); renderTabs(); updateInboxBadge();
     const nw=myNotes[0]; if(inboxShown&&nw&&before&&nw.at>before&&nw.kind==="argue") toast(`😤 ${nw.fromNick}님이 따지러 왔어요: ${nw.text}`); });
   on(db.collection("thefts").orderBy("at","desc").limit(200),s=>{ thefts=s.docs.map(d=>({id:d.id,...d.data()})); processThefts(); });
+  on(db.collection("dms").where("to","==",docId).limit(300),s=>{ dmIn=s.docs.map(d=>({id:d.id,...d.data()})); onDmSnapshot(); });
+  on(db.collection("dms").where("from","==",docId).limit(300),s=>{ dmOut=s.docs.map(d=>({id:d.id,...d.data()})); onDmSnapshot(); });
   let gIn=[], gOut=[]; const mergeG=()=>{ gifts=[...gIn,...gOut]; processGifts(); };
   on(db.collection("gifts").where("to","==",docId).limit(100),s=>{ gIn=s.docs.map(d=>({id:d.id,...d.data()})); mergeG(); });
   on(db.collection("gifts").where("from","==",docId).limit(100),s=>{ gOut=s.docs.map(d=>({id:d.id,...d.data()})); mergeG(); });
@@ -1068,7 +1071,7 @@ const ago=t=>{ const m=Math.floor((Date.now()-t)/60000); return m<1?"방금":m<6
 const TABS=[["village","🏡","마을"],["market","🧺","시장"],["rest","🌿","쉬기"],["dress","🎀","꾸미기"],["neighbors","👋","이웃"],["trade","🔁","교환"],["chat","💬","채팅"]];
 function renderTabs(){
   const last=chats.length?chats[chats.length-1]:null;
-  const chatNew=last&&last.at>chatSeen&&last.from!==docId;
+  const chatNew=(last&&last.at>Math.max(chatSeen,chatSince)&&last.from!==docId)||(typeof dmUnreadTotal==="function"&&dmUnreadTotal()>0);
   const notesNew=myNotes.length&&myNotes[0].at>notesSeen;
   $("tabs").innerHTML=TABS.map(([k,i,n])=>`<button data-tab="${k}" ${tab===k?'aria-current="page"':""}><span class="i">${i}</span>${n}${(k==="chat"&&chatNew)||(k==="village"&&notesNew)?'<span class="dot"></span>':""}</button>`).join("");
 }
@@ -2317,6 +2320,7 @@ function inboxItems(){
   if(th.length){ const names=[...new Set(th.map(t=>t.fromNick))]; it.push({k:"police",ic:"🚓",title:"경찰 출동! 누가 내 농작물을 수확해 갔어요",sub:`${names.join(", ")}님 · ${th.length}건`}); }
   const gp=gifts.filter(g=>g.to===docId&&g.status==="pending");
   if(gp.length) it.push({k:"gift",ic:"🎁",title:`집들이 선물 ${gp.length}개가 와 있어요`,sub:gp.map(g=>`${g.fromNick}: ${(ITEMS[g.item]||{}).name||""} ${g.n}개`).join(", ")});
+  const dn=dmUnreadTotal(); if(dn){ const froms=[...new Set(dms.filter(m=>m.to===docId&&m.at>((S.dmSeen||{})[m.from]||0)).map(m=>m.fromNick))]; it.push({k:"dm",ic:"💌",title:`비밀 메시지 ${dn}개`,sub:froms.join(", ")+"님"}); }
   const nn=myNotes.filter(n=>n.at>(S.notesSeenAt||0));
   if(nn.length) it.push({k:"notes",ic:nn.some(n=>n.kind==="argue")?"😤":"📖",title:`새 방명록 ${nn.length}개`,sub:`${nn[0].fromNick}: ${nn[0].text}`});
   return it;
@@ -2327,7 +2331,8 @@ function showInbox(force){
   openSheet("알림",`<div class="guide"><div class="gic">🔔</div><h2>${esc(S.nick)}님, 알림이 ${it.length}개 있어요</h2><p>눌러서 바로 확인해요</p></div>
     <div class="list">${it.map(i=>`<button class="item inboxitem" data-ib="${i.k}"><span class="ic">${i.ic}</span><span class="grow"><span class="nm">${esc(i.title)}</span><br><span class="sub">${esc(i.sub)}</span></span><span aria-hidden="true">›</span></button>`).join("")}</div>
     <button class="btn sub" data-close>나중에 볼게요</button>`,w=>{
-    w.querySelectorAll("[data-ib]").forEach(b=>b.onclick=()=>{ SFX.tap(); if(b.dataset.ib==="police") policeSheet(); else if(b.dataset.ib==="gift"){ closeSheet(); giftQueue=gifts.filter(g=>g.to===docId&&g.status==="pending"); showGiftAsk(); } else notesSheet(); }); });
+    w.querySelectorAll("[data-ib]").forEach(b=>b.onclick=()=>{ SFX.tap(); if(b.dataset.ib==="police") policeSheet(); else if(b.dataset.ib==="dm"){ const m=dms.filter(x=>x.to===docId&&x.at>((S.dmSeen||{})[x.from]||0)).sort((a,b)=>b.at-a.at)[0]; closeSheet(); chatMode="dm"; dmWith=m?m.from:null; go("chat"); }
+    else if(b.dataset.ib==="gift"){ closeSheet(); giftQueue=gifts.filter(g=>g.to===docId&&g.status==="pending"); showGiftAsk(); } else notesSheet(); }); });
   return true;
 }
 let inboxShown=false;
@@ -2494,11 +2499,12 @@ function vDress(v){
 function vNeighbors(v){
   if(mode!=="db") return sharedOnly(v);
   const list=players.filter(p=>p.nick&&idFor(p.nick)!==docId&&(isOwnerView||shown(idFor(p.nick)))).sort((a,b)=>(onlineIds.has(idFor(b.nick))-onlineIds.has(idFor(a.nick))));
-  v.innerHTML=`<div class="row"><h2 class="grow">이웃 마을</h2><button class="btn sm sub" id="nbWorld">🗺 전체지도</button></div>${list.length?`<div class="list">${list.map(p=>{ const on=onlineIds.has(idFor(p.nick)); return `<button class="neighbor" data-v="${esc(idFor(p.nick))}">${charImg(p.char||{})}<span class="grow"><b style="font-family:var(--display);font-weight:400;font-size:17px">${esc(p.nick)}</b> · ${esc(p.village)}${on?` <span class="on">● 접속 중</span>`:""}<br><span class="note">${isAway(p)&&!on?esc(awayText(p))+" · ":""}${p.house&&p.house.mat?`${MATS[p.house.mat]} ${p.house.level||1}층${housesOf(p).filter(h=>h.mat).length>1?` 외 ${housesOf(p).filter(h=>h.mat).length-1}채`:""}`:"집 짓는 중"} · 동물 ${(p.animals||[]).length}마리 · ${on?"지금 함께 있어요":ago(p.updatedAt||0)+" 접속"}</span></span>${siteHidden.has(idFor(p.nick))?`<span class="chip">숨김</span>`:`<span class="btn sm">찾아가기</span>`}</button>${isOwnerView?`<button class="btn sm sub hidebtn" data-hide="${esc(idFor(p.nick))}">${siteHidden.has(idFor(p.nick))?"다시 보이기":"모두에게 숨기기"}</button>`:""}`}).join("")}</div>
+  v.innerHTML=`<div class="row"><h2 class="grow">이웃 마을</h2><button class="btn sm sub" id="nbWorld">🗺 전체지도</button></div>${list.length?`<div class="list">${list.map(p=>{ const on=onlineIds.has(idFor(p.nick)); return `<button class="neighbor" data-v="${esc(idFor(p.nick))}">${charImg(p.char||{})}<span class="grow"><b style="font-family:var(--display);font-weight:400;font-size:17px">${esc(p.nick)}</b> · ${esc(p.village)}${on?` <span class="on">● 접속 중</span>`:""}<br><span class="note">${isAway(p)&&!on?esc(awayText(p))+" · ":""}${p.house&&p.house.mat?`${MATS[p.house.mat]} ${p.house.level||1}층${housesOf(p).filter(h=>h.mat).length>1?` 외 ${housesOf(p).filter(h=>h.mat).length-1}채`:""}`:"집 짓는 중"} · 동물 ${(p.animals||[]).length}마리 · ${on?"지금 함께 있어요":ago(p.updatedAt||0)+" 접속"}</span></span>${siteHidden.has(idFor(p.nick))?`<span class="chip">숨김</span>`:`<span class="btn sm">찾아가기</span>`}</button><button class="btn sm sub hidebtn" data-dmto="${esc(idFor(p.nick))}">💌 비밀 채팅</button>${isOwnerView?`<button class="btn sm sub hidebtn" data-hide="${esc(idFor(p.nick))}">${siteHidden.has(idFor(p.nick))?"다시 보이기":"모두에게 숨기기"}</button>`:""}`}).join("")}</div>
     ${isOwnerView?`<p class="note">마을 주인만 보이는 버튼이에요. 숨긴 사람은 다른 사람 화면(전체지도, 이웃, 채팅, 함께 있는 캐릭터)에서 사라지고, 그 사람이 키운 마을과 기록은 그대로 남아요.</p>`:""}`
     :`<p class="note">아직 이웃이 없어요. 이 페이지 링크를 가족, 친구에게 보내 마을 입구 비밀번호를 알려주세요.</p>`}`;
   v.querySelector("#nbWorld").onclick=()=>{ tab="village"; enterWorld(); renderTabs(); };
   v.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>toggleHidden(b.dataset.hide));
+  v.querySelectorAll("[data-dmto]").forEach(b=>b.onclick=()=>openDm(b.dataset.dmto));
   v.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
     if(siteHidden.has(b.dataset.v)){ toast("숨긴 사람의 마을이에요. 다시 보이기를 누르면 찾아갈 수 있어요"); return; }
     const target=villages().find(x=>x.p.pid===b.dataset.v); if(!target) return;
@@ -2589,17 +2595,63 @@ async function sendChat(text){
   try{ await db.collection("chat").add({from:docId,nick:S.nick,text,at:Date.now()}); logAct("채팅"); return true; }
   catch(err){ toast("보내지 못했어요. 쓰기 권한을 확인해주세요"); return false; }
 }
-const chatListHTML=()=>chats.length?chats.filter(m=>!m.from||m.from==="system"||shown(m.from)).map(m=>m.from==="system"?`<p class="note" style="text-align:center">${esc(m.text)}</p>`
-    :`<div class="msg ${m.from===docId?"mine":""}">${m.from===docId?"":`<span class="who">${esc(m.nick)}</span>`}${esc(m.text)}</div>`).join(""):`<p class="note">첫 인사를 건네보세요.</p>`;
-function renderChatList(){ const l=document.querySelector("#view .chat"); if(!l){ render(); return; } l.innerHTML=chatListHTML(); $("view").scrollTop=1e9; }
+// 채팅은 내가 들어온 뒤(함께 접속해 있는 동안) 나눈 말만 보여요
+let chatSince=Date.now();
+const liveChats=()=>chats.filter(m=>(m.at||0)>=chatSince&&(!m.from||m.from==="system"||shown(m.from)));
+const chatListHTML=()=>liveChats().length?liveChats().map(m=>m.from==="system"?`<p class="note" style="text-align:center">${esc(m.text)}</p>`
+    :`<div class="msg ${m.from===docId?"mine":""}">${m.from===docId?"":`<span class="who">${esc(m.nick)}</span>`}${esc(m.text)}</div>`).join(""):`<p class="note">지금 마을에 들어와 있는 사람들과 나누는 대화만 보여요. 들어오기 전의 대화는 보이지 않고, 나갔다 오면 새로 시작해요. 첫 인사를 건네보세요 👋</p>`;
+function renderChatList(){ if(chatMode!=="all"){ renderTabs(); return; } const l=document.querySelector("#view .chat"); if(!l){ render(); return; } l.innerHTML=chatListHTML(); $("view").scrollTop=1e9; }
+// ---------- 💌 비밀 채팅: 고른 사람과 둘만, 지워지지 않고 계속 남아요 ----------
+let chatMode="all", dmWith=null, dms=[], dmIn=[], dmOut=[];
+const dmPeople=()=>players.filter(p=>p.nick&&idFor(p.nick)!==docId&&shown(idFor(p.nick)));
+const dmThread=pid=>dms.filter(m=>(m.from===docId&&m.to===pid)||(m.from===pid&&m.to===docId)).sort((a,b)=>a.at-b.at);
+function dmUnread(pid){ const seen=(S.dmSeen||{})[pid]||0; return dms.filter(m=>m.from===pid&&m.to===docId&&m.at>seen).length; }
+function dmUnreadTotal(){ if(!S) return 0; const by=new Set(dms.filter(m=>m.to===docId).map(m=>m.from)); let n=0; by.forEach(pid=>n+=dmUnread(pid)); return n; }
+function markDmSeen(pid){ const th=dmThread(pid); if(!th.length) return; S.dmSeen=S.dmSeen||{}; const last=th[th.length-1].at; if((S.dmSeen[pid]||0)<last){ S.dmSeen[pid]=last; save(); } }
+function onDmSnapshot(){
+  const before=onDmSnapshot.lastIn||0; dms=[...dmIn,...dmOut];
+  const newest=dmIn.reduce((m,x)=>Math.max(m,x.at||0),0);
+  if(onDmSnapshot.ready&&newest>before){ const m=dmIn.find(x=>x.at===newest);
+    if(m&&!(tab==="chat"&&chatMode==="dm"&&dmWith===m.from)){ SFX.chat(); toast(`💌 ${m.fromNick}님의 비밀 메시지: ${m.text.slice(0,30)}`); } }
+  onDmSnapshot.lastIn=Math.max(before,newest); onDmSnapshot.ready=true;
+  if(tab==="chat"&&chatMode==="dm"){ if(dmWith){ markDmSeen(dmWith); renderDmThread(); } else render(); }
+  renderTabs(); updateInboxBadge();
+}
+function dmThreadHTML(pid){
+  const th=dmThread(pid);
+  return th.length?th.map(m=>`<div class="msg ${m.from===docId?"mine":""}">${esc(m.text)}<span class="who" style="text-align:right">${ago(m.at)}</span></div>`).join("")
+    :`<p class="note">아직 나눈 비밀 메시지가 없어요. 둘만 볼 수 있는 대화예요.</p>`;
+}
+function renderDmThread(){ const l=document.querySelector("#view .dmchat"); if(!l){ render(); return; } l.innerHTML=dmThreadHTML(dmWith); $("view").scrollTop=1e9; }
+function openDm(pid){ chatMode="dm"; dmWith=pid; closeSheet(); if(tab!=="chat") go("chat"); else render(); }
+async function sendDm(text){
+  const p=players.find(x=>idFor(x.nick)===dmWith); if(!p) return false;
+  try{ await db.collection("dms").add({from:docId,fromNick:S.nick,to:dmWith,toNick:p.nick,text:text.slice(0,300),at:Date.now()}); logAct(`${p.nick}님께 비밀 메시지`); return true; }
+  catch(e){ toast("보내지 못했어요. 잠시 뒤 다시 해주세요"); return false; }
+}
 function vChat(v){
   if(mode!=="db") return sharedOnly(v);
-  v.innerHTML=`<div class="chat" style="padding-bottom:64px">${chatListHTML()}</div>
-    <form class="composer" id="chatForm"><input id="chatIn" maxlength="200" autocomplete="off" placeholder="마을 사람들에게 한마디"><button class="btn sm" type="submit">보내기</button></form>`;
-  v.querySelector("#chatForm").onsubmit=async e=>{
-    e.preventDefault(); const inp=v.querySelector("#chatIn"), t=inp.value.trim(); if(!t) return; inp.value="";
-    if(!await sendChat(t)) inp.value=t;
-  };
+  const un=dmUnreadTotal();
+  const seg=`<div class="seg"><button data-cm="all" aria-pressed="${chatMode==="all"}">💬 모두</button><button data-cm="dm" aria-pressed="${chatMode==="dm"}">💌 비밀 채팅${un?` (${un})`:""}</button></div>`;
+  if(chatMode==="all"){
+    v.innerHTML=`${seg}<div class="chat" style="padding-bottom:64px">${chatListHTML()}</div>
+      <form class="composer" id="chatForm"><input id="chatIn" maxlength="200" autocomplete="off" placeholder="마을 사람들에게 한마디"><button class="btn sm" type="submit">보내기</button></form>`;
+    v.querySelector("#chatForm").onsubmit=async e=>{ e.preventDefault(); const inp=v.querySelector("#chatIn"), t=inp.value.trim(); if(!t) return; inp.value=""; if(!await sendChat(t)) inp.value=t; };
+  } else if(!dmWith){
+    const ppl=dmPeople().map(p=>{ const pid=idFor(p.nick), th=dmThread(pid), last=th[th.length-1]; return {p,pid,last,un:dmUnread(pid)}; })
+      .sort((a,b)=>((b.last&&b.last.at)||0)-((a.last&&a.last.at)||0));
+    v.innerHTML=`${seg}<p class="note">말 걸 사람을 골라요. 비밀 채팅은 둘만 보이고, 지워지지 않고 계속 남아요.</p>
+      ${ppl.length?`<div class="list">${ppl.map(x=>`<button class="neighbor" data-dm="${esc(x.pid)}">${charImg(x.p.char||{})}<span class="grow"><b style="font-family:var(--display);font-weight:400;font-size:17px">${esc(x.p.nick)}</b>${onlineIds.has(x.pid)?` <span class="on">● 접속 중</span>`:""}<br><span class="note">${x.last?`${x.last.from===docId?"나: ":""}${esc(x.last.text.slice(0,28))} · ${ago(x.last.at)}`:"아직 대화가 없어요"}</span></span>${x.un?`<span class="chip" style="background:var(--berry);color:#fff;border-color:var(--berry)">${x.un}</span>`:""}</button>`).join("")}</div>`:`<p class="note">아직 마을에 다른 사람이 없어요.</p>`}`;
+    v.querySelectorAll("[data-dm]").forEach(b=>b.onclick=()=>{ SFX.tap(); dmWith=b.dataset.dm; render(); });
+  } else {
+    const p=players.find(x=>idFor(x.nick)===dmWith)||{nick:"친구"}; markDmSeen(dmWith);
+    v.innerHTML=`${seg}<div class="row"><button class="btn sm sub" id="dmBack">← 목록</button><b class="grow" style="font-family:var(--display);font-weight:400;font-size:17px">💌 ${esc(p.nick)}님과 비밀 채팅</b>${onlineIds.has(dmWith)?`<span class="on">● 접속 중</span>`:""}</div>
+      <div class="dmchat chat" style="padding-bottom:64px">${dmThreadHTML(dmWith)}</div>
+      <form class="composer" id="dmForm"><input id="dmIn" maxlength="300" autocomplete="off" placeholder="${esc(p.nick)}님에게만 보이는 말"><button class="btn sm" type="submit">보내기</button></form>`;
+    v.querySelector("#dmBack").onclick=()=>{ dmWith=null; render(); };
+    v.querySelector("#dmForm").onsubmit=async e=>{ e.preventDefault(); const inp=v.querySelector("#dmIn"), t=inp.value.trim(); if(!t) return; inp.value=""; if(!await sendDm(t)) inp.value=t; };
+  }
+  v.querySelectorAll("[data-cm]").forEach(b=>b.onclick=()=>{ SFX.tap(); chatMode=b.dataset.cm; render(); setTimeout(()=>{ $("view").scrollTop=1e9; },30); });
 }
 
 // =====================================================================
