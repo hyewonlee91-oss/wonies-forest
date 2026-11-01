@@ -110,7 +110,7 @@ const OWNER_NICK = "이혜원숭이";
     if(name==="user") return Promise.resolve(user);
     return Promise.resolve(null);
   }};
-  document.addEventListener("DOMContentLoaded",()=>{ const n=document.getElementById("connNote"); if(n) n.textContent=fs?"입구 비밀번호를 넣으면 마을에 연결돼요.":"마을 서버 설정이 아직 안 됐어요."; });
+  document.addEventListener("DOMContentLoaded",()=>{ const n=document.getElementById("connNote"); if(n) n.textContent=fs?"마을에 연결하는 중이에요…":"마을 서버 설정이 아직 안 됐어요."; });
 })();
 </script>
 </head><body>
@@ -388,10 +388,9 @@ table.dash time{color:var(--muted);margin-right:6px}
 <section id="gate" class="screen">
   <h1 class="logo">🏕 워니의숲<small>가족, 친구와 함께 가꾸는 작은 마을</small></h1>
   <form class="panel" id="gateForm" novalidate>
-    <label class="lbl" for="gatePw">마을 입구 비밀번호</label>
-    <input id="gatePw" type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="입구 비밀번호" maxlength="20">
+    <input id="gatePw" type="hidden" value="">
     <p class="err" id="gateErr"></p>
-    <button class="btn" type="submit">마을로 들어가기</button>
+    <button class="btn" type="submit" id="gateRetry" hidden>다시 연결하기</button>
     <p class="note" id="connNote">마을에 연결하는 중이에요…</p>
   </form>
 </section>
@@ -454,7 +453,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-15</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-21</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -529,7 +528,7 @@ Object.assign(ITEMS,{
 });
 Object.assign(ITEMS.apple,{food:1}); Object.assign(ITEMS.pear,{food:1}); Object.assign(ITEMS.straw,{food:1});
 const FOOD_EN={straw:4,apple:6,pear:7,ricecake:10,omelet:15,juice:15,pearjuice:18,cheese:20,bread:25,cake:40};
-const EN_COST={plant:3,harvest:2,craft:4,steal:6,animal:1}, BUFF_MS=30*60000;
+const EN_COST={plant:3,harvest:3,craft:4,steal:10,animal:1}, BUFF_MS=30*60000;
 Object.assign(ITEMS,{
   a_chicken:{name:"닭",ic:"🐔",sell:30,animal:"chicken"}, a_cow:{name:"소",ic:"🐄",sell:100,animal:"cow"},
   a_sheep:{name:"양",ic:"🐑",sell:70,animal:"sheep"}, a_cat:{name:"고양이",ic:"🐈",sell:40,animal:"cat"}, a_dog:{name:"강아지",ic:"🐕",sell:45,animal:"dog"}});
@@ -759,7 +758,14 @@ async function hashPin(nick,pin){
 }
 // 업데이트 소식: 새 소식을 넣을 때 NEWS에 날짜(id)와 내용을 적어요.
 // 사람마다 한 번만 떠요(다음 접속부터는 안 뜸). 비어 있으면 아무것도 안 떠요.
-const NEWS={id:"2026-11-01", title:"🏕 11/1 업데이트 소식", items:[
+const NEWS={id:"2026-11-01b", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
+  {h:"🐾 다른 친구의 동물을 유인할 수 있어요", d:"친구 마을에서 동물을 누르고 좋아하는 음식을 주면 졸졸 따라와요. 닭은 🌾쌀, 소는 🪹지푸라기, 양은 🍎사과, 고양이는 🥛우유, 강아지는 🧀치즈를 좋아해요. 우리 집으로 데려가면 내 동물이 되는데, 우리가 꽉 차 있으면 도망가 버려요!"},
+  {h:"🚓 농작물을 훔쳐가면 어떤 일이 벌어질지 몰라요", d:"친구 밭의 다 익은 작물을 몰래 수확할 수 있지만… 그 집에 누가 지키고 있을지도 몰라요. 잡히면 감옥에 갇히고, 집주인이 합의해 줘야 나올 수 있어요. 갇혀 있는 동안 ✍️ 반성문을 써서 낼 수 있어요."},
+  {h:"🕴️ 우리 집은 보디가드가 지켜줘요", d:"시장 › 사기에서 보디가드를 일주일에 🪙1000으로 고용해요. 몰래 가져가려는 사람을 잡아 감옥에 가둬요. 알림(🔔)에서 반성문을 읽고 '합의하고 풀어주기'를 누르면 풀려나요."},
+  {h:"😴 친구 집 침대에서도 쉴 수 있어요", d:"⚡ 기운이 떨어지면 친구 집에 들어가 침대를 눌러보세요. 누워 있는 동안 기운이 차요."},
+  {h:"🪧 나갈 때 팻말을 걸어요", d:"메뉴 › 나가기나 뒤로가기를 누르면 '이따 다시 올게요 / 회사 다녀올게요🥲 / 현실약속 다녀올게요' 중에 골라요. 팻말은 집 옆에 크게 보이고, 주인이 없는 집엔 💤 자리비움이 떠요."},
+  {h:"🚪 이제 비밀번호 없이 바로 들어와요", d:"링크를 열면 입구 비밀번호 없이 바로 닉네임 화면이 나와요. 길강아지·고양이와 📢 삐삐는 한 번 놀아주면 인사하고 떠나요."}
+], old:[
   "화면이 넓어졌어요! 게임이 화면 전체를 쓰고, 자주 안 쓰는 버튼은 오른쪽 위 ☰ 메뉴로 옮겼어요.",
   "⚡ 기운이 생겼어요. 심기·수확·만들기에 쓰고, 음식을 먹거나 집 침대에서 자면 다시 차요. 케이크를 먹으면 30분 동안 기운 펄펄!",
   "🎒 가방 › 만들기에서 양털·우유·과일로 먹거리, 털장갑 같은 장신구, 이불 같은 가구를 만들 수 있어요.",
@@ -769,7 +775,7 @@ const NEWS={id:"2026-11-01", title:"🏕 11/1 업데이트 소식", items:[
 function showNews(){
   if(!NEWS||!S||S.newsSeen===NEWS.id) return false;
   S.newsSeen=NEWS.id; save();
-  openSheet(NEWS.title,`<div class="news"><ol>${NEWS.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ol></div><button class="btn" id="newsClose">닫고 시작하기</button>`,
+  openSheet(NEWS.title,`${NEWS.sub?`<p class="note">${esc(NEWS.sub)}</p>`:""}<div class="news"><ol>${NEWS.items.map(i=>typeof i==="string"?`<li>${esc(i)}</li>`:`<li><b>${esc(i.h)}</b><br><span style="font-size:.92em;opacity:.85">${esc(i.d)}</span></li>`).join("")}</ol></div><button class="btn" id="newsClose">닫고 시작하기</button>`,
     w=>w.querySelector("#newsClose").onclick=()=>{ closeSheet(); setTimeout(()=>tryInbox(),400); });
   return true;
 }
@@ -786,7 +792,7 @@ async function watchLock(){
     if(S&&["neighbors","chat","rest"].includes(tab)) render();
     if(visitId&&!shown(visitId)&&tab==="village"&&where!=="world"){ toast("이 마을은 지금 볼 수 없어요"); travelHome(); }
     if(siteLocked&&!isOwnerView){ try{ setMusic(false); waterOff(); closeSheet(); roomCap&&roomCap.presence({id:null,nick:null,scene:null}); visitEnd(); }catch(e){} S=null; show("locked"); }
-    else if(!$("locked").hidden){ show("gate"); }
+    else if(!$("locked").hidden){ show("gate"); autoGate(); }
   },()=>{}); }catch(e){}
 }
 let dbReady=false;
@@ -828,14 +834,16 @@ addEventListener("pagehide",()=>{ if(dirty) flush(); });
 // =====================================================================
 // 입장 흐름
 // =====================================================================
-$("gateForm").addEventListener("submit",async e=>{
-  e.preventDefault(); audio();
-  const pw=$("gatePw").value.trim();
-  const ok=window.__gateCheck?await window.__gateCheck(pw):pw===GATE_PW;
-  if(!ok){ $("gateErr").textContent="비밀번호가 달라요. 마을 입구 비밀번호를 확인해주세요."; SFX.no(); return; }
-  SFX.tap(); show("login");
-  const last=ls.get("dv:lastNick"); if(last) $("nick").value=last;
-});
+// 입구 비밀번호 화면 없음: 열리자마자 자동으로 마을에 연결하고 바로 로그인 화면
+async function autoGate(){
+  $("gateErr").textContent=""; $("gateRetry").hidden=true; $("connNote").textContent="마을에 연결하는 중이에요…";
+  let ok=false; try{ ok=window.__gateCheck?await window.__gateCheck(GATE_PW):true; }catch(e){}
+  if(!$("locked").hidden||S) return;
+  if(!ok){ $("gateErr").textContent="마을에 연결하지 못했어요. 인터넷을 확인하고 다시 눌러주세요."; $("gateRetry").hidden=false; return; }
+  show("login"); const last=ls.get("dv:lastNick"); if(last) $("nick").value=last;
+}
+$("gateForm").addEventListener("submit",e=>{ e.preventDefault(); audio(); autoGate(); });
+setTimeout(autoGate,0);
 let pending=null;
 $("loginForm").addEventListener("submit",async e=>{
   e.preventDefault(); audio();
@@ -901,12 +909,24 @@ function migrate(){
   S.houses.forEach((h,i)=>{ if(h.lot==null) h.lot=i; }); S.house=S.houses[0];
 }
 
-const SIGNS=["회사 다녀올게요😇","친구랑 현실약속 다녀올게요😀","내일 또 올게요😍"];
-$("logoutBtn").onclick=()=>{ openSheet("나가기",`<p>현관에 붙여둘 팻말을 골라주세요. 놀러 온 친구에게 보여요.</p>
+const SIGNS=["이따 다시 올게요","회사 다녀올게요🥲","현실약속 다녀올게요"];
+function leaveSheet(viaBack){ openSheet("워니네숲을 나가시겠습니까?",`<p><b>팻말을 걸고 나가주세요.</b> 놀러 온 친구에게 집 옆 팻말로 보여요.</p>
   <div class="list">${SIGNS.map((x,i)=>`<button class="btn sub" data-sign="${i}">🪧 ${x}</button>`).join("")}<button class="btn sub" id="outTrip">🏝 앞으로 언제 들어올지 모르겠어요</button></div>
   <p class="note">키우던 마을은 그대로 저장돼요. 다시 들어오면 팻말은 자동으로 떼어져요.</p>
   <button class="btn sub" data-close>더 있을래요</button>`,
-  w=>{ w.querySelectorAll("[data-sign]").forEach(b=>b.onclick=()=>doLogout(false,SIGNS[+b.dataset.sign])); w.querySelector("#outTrip").onclick=()=>doLogout(true,null); }); };
+  w=>{ const out=async(trip,sign)=>{ await doLogout(trip,sign); if(viaBack){ leaveArmed=false; history.go(-2); } };
+    w.querySelectorAll("[data-sign]").forEach(b=>b.onclick=()=>out(false,SIGNS[+b.dataset.sign])); w.querySelector("#outTrip").onclick=()=>out(true,null); }); }
+$("logoutBtn").onclick=()=>leaveSheet(false);
+// 뒤로가기를 누르면 바로 꺼지지 않고 팻말 고르는 창이 떠요
+let leaveArmed=false;
+function armLeave(){ if(leaveArmed) return; try{ history.pushState({wf:1},""); leaveArmed=true; }catch(e){} }
+addEventListener("popstate",()=>{ if(!leaveArmed) return; leaveArmed=false;
+  if(!S){ history.back(); return; }
+  if(!$("sheetwrap").hidden){ closeSheet(); armLeave(); return; }
+  if(tab!=="village"){ go("village"); armLeave(); return; } // 채팅 등에서 뒤로가기: 있던 마을로
+  armLeave(); leaveSheet(true); });
+// 새로고침·창 닫기: 브라우저가 '나가시겠어요?'를 한 번 물어봐요 (문구는 브라우저가 정해요)
+addEventListener("beforeunload",e=>{ if(S&&!S.sign&&!S.away){ e.preventDefault(); e.returnValue=""; } });
 async function doLogout(trip,sign){
   if(S){ S.away=!!trip; S.sign=sign||null; logAct(trip?"나가기 (여행 떠남)":`나가기 (${sign||"팻말 없음"})`); save(); }
   { await flush(); unsubs.forEach(u=>{try{u()}catch(e){}}); unsubs=[]; try{ roomCap&&roomCap.presence({id:null,nick:null}); }catch(e){} visitEnd(); visitCur=null; visitDoc=null; S=null; docId=null; visitId=null; where="map"; closeSheet(); waterOff(); $("pin").value=""; show("login"); } }
@@ -955,12 +975,27 @@ $("helpBtn").onclick=()=>{ SFX.tap(); showGuide(); };
 // 처음 들어온 사람을 위한 안내 카드 (건너뛰기, ? 버튼으로 다시 보기)
 const GUIDE=[
   {ic:"🏕",title:"🏕워니의숲에 오신 걸 환영해요!",text:"시장에서 필요한 재료를 사와서 집도 짓고 동물도 키우고 장신구도 사보세요 :)"},
-  {ic:"👋",title:"친구네 놀러 가기",text:"친구의 집에 놀러가서 채팅도 하고 같이 워니의숲을 돌아다녀보세요. 친구가 집에 없으면 방명록을 남길 수도 있어요✏️"}
+  {ic:"👋",title:"친구네 놀러 가기",text:"친구의 집에 놀러가서 채팅도 하고 같이 워니의숲을 돌아다녀보세요. 친구가 집에 없으면 방명록을 남길 수도 있어요✏️"},
+  {ic:"📖",title:"이렇게 즐겨요",text:"워니의숲에서 할 수 있는 것들이에요.",list:[
+    {h:"🌱 농사 짓기", d:"시장에서 씨앗을 사서 밭에 심고, 다 자라면 수확해서 시장에 팔아요. 밭 칸은 시장에서 늘릴 수 있어요."},
+    {h:"🐔 동물 키우기", d:"시장 › 동물에서 데려와 우리에서 키워요. 때가 되면 달걀·우유·양털을 주고, 강아지·고양이는 동전을 물어와요."},
+    {h:"🏠 집 짓고 꾸미기", d:"빈 풀밭을 누르면 그 자리에 집을 지어요. 층 올리기, 옆으로 넓히기, 울타리도 되고 집 안에서 가구를 놓고 돌리고 다른 층으로 옮길 수 있어요."},
+    {h:"⚡ 기운", d:"심기·수확·만들기에 기운을 써요. 음식을 먹거나 침대에서 쉬면 다시 차고(친구 집 침대도 돼요), 케이크를 먹으면 30분 동안 기운 펄펄!"},
+    {h:"🎒 만들기", d:"가방 › 만들기에서 양털·우유·과일로 먹거리, 털장갑 같은 장신구, 이불 같은 가구를 만들어요."},
+    {h:"🚲 탈것", d:"🚲 타기 버튼으로 탈것을 사고 타요. 탈것을 타면 친구 마을에 더 빨리 가요. 자동차는 차고가 있어야 해요."},
+    {h:"👋 친구와 놀기", d:"🚶 놀러가기로 친구 마을에 가요. 채팅, 💌 비밀 메시지, ✏️ 방명록을 남길 수 있고, 친구가 집에 있으면 🎁 집들이 선물도 줄 수 있어요."},
+    {h:"🐾 친구 동물 유인하기", d:"친구 마을에서 동물을 누르고 좋아하는 음식을 주면 따라와요. 닭 🌾쌀, 소 🪹지푸라기, 양 🍎사과, 고양이 🥛우유, 강아지 🧀치즈. 우리가 꽉 차 있으면 도망가 버려요!"},
+    {h:"🚓 농작물을 훔쳐가면…", d:"친구 밭의 다 익은 작물을 몰래 수확할 수 있지만, 어떤 일이 벌어질지 몰라요. 잡히면 감옥에 갇히고, 집주인이 합의해 줘야 나와요. 갇혀 있는 동안 ✍️ 반성문을 낼 수 있어요."},
+    {h:"🕴️ 보디가드", d:"시장 › 사기에서 일주일에 🪙1000으로 고용하면 우리 집을 지켜줘요. 🔔 알림에서 반성문을 읽고 풀어줄 수 있어요."},
+    {h:"🪧 나갈 때 팻말", d:"☰ 메뉴 › 나가기나 뒤로가기를 누르면 팻말을 골라 집 옆에 걸어둘 수 있어요. 주인이 없는 집엔 💤 자리비움이 떠요."},
+    {h:"☰ 메뉴", d:"🔔 알림, 📮 문제 신고, 소리 끄기, 나가기가 들어 있어요."}
+  ]}
 ];
 function showGuide(i=0){
   const g=GUIDE[i], last=i===GUIDE.length-1;
   openSheet(`안내 ${i+1} / ${GUIDE.length}`,`
     <div class="guide"><div class="gic">${g.ic}</div><h2>${esc(g.title)}</h2><p>${esc(g.text)}</p>
+    ${g.list?`<div class="news" style="text-align:left"><ol>${g.list.map(x=>`<li><b>${esc(x.h)}</b><br><span style="font-size:.92em;opacity:.85">${esc(x.d)}</span></li>`).join("")}</ol></div>`:""}
     <div class="gdots">${GUIDE.map((_,j)=>`<span${j===i?' class="cur"':""}></span>`).join("")}</div></div>
     <div class="row">${i>0?`<button class="btn sub grow" id="gPrev">이전</button>`:`<button class="btn sub grow" id="gSkip">건너뛰기</button>`}
     <button class="btn grow" id="gNext">${last?"시작하기":"다음"}</button></div>
@@ -1008,7 +1043,7 @@ const awayText=p=>`${p.nick}${josa(p.nick,"은","는")} 잠시 여행을 떠났�
 function startGame(){
   chatSince=Date.now(); chatSeen=chatSince;
   migrate(); // 새로 만든 마을도 집 목록·기운 등 기본값을 갖추게
-  S.away=false; S.sign=null; inboxShown=false; save(); stray=null; strayCheckAt=0; needSnap=true; // 들어오면 여행에서 돌아옴, 마지막 접속 시각도 갱신
+  S.away=false; S.sign=null; inboxShown=false; save(); stray=null; strayCheckAt=0; needSnap=true; armLeave(); setTimeout(enforceJail,1500); // 들어오면 여행에서 돌아옴, 마지막 접속 시각도 갱신
   show("game"); renderTop(); go("village");
   const m=ls.get("dv:music"); setMusic(m===null?true:!!m);
   if(mode==="db") subscribe();
@@ -1040,7 +1075,8 @@ function subscribe(){
     const before=myNotes.length?myNotes[0].at:0;
     myNotes=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at); renderTabs(); updateInboxBadge();
     const nw=myNotes[0]; if(inboxShown&&nw&&before&&nw.at>before&&nw.kind==="argue") toast(`😤 ${nw.fromNick}님이 따지러 왔어요: ${nw.text}`); });
-  on(db.collection("thefts").orderBy("at","desc").limit(200),s=>{ thefts=s.docs.map(d=>({id:d.id,...d.data()})); processThefts(); });
+  on(db.collection("thefts").orderBy("at","desc").limit(200),s=>{ thefts=s.docs.map(d=>({id:d.id,...d.data()})); processThefts(); animsKey=""; });
+  on(db.collection("jails").orderBy("at","desc").limit(100),s=>{ jails=s.docs.map(d=>({id:d.id,...d.data()})); onJails(); });
   on(db.collection("dms").where("to","==",docId).limit(300),s=>{ dmIn=s.docs.map(d=>({id:d.id,...d.data()})); onDmSnapshot(); });
   on(db.collection("dms").where("from","==",docId).limit(300),s=>{ dmOut=s.docs.map(d=>({id:d.id,...d.data()})); onDmSnapshot(); });
   let gIn=[], gOut=[]; const mergeG=()=>{ gifts=[...gIn,...gOut]; processGifts(); };
@@ -1083,7 +1119,8 @@ function renderTabs(){
   $("tabs").innerHTML=TABS.map(([k,i,n])=>`<button data-tab="${k}" ${tab===k?'aria-current="page"':""}><span class="i">${i}</span>${n}${(k==="chat"&&chatNew)||(k==="village"&&notesNew)?'<span class="dot"></span>':""}</button>`).join("");
 }
 $("tabs").onclick=e=>{ const b=e.target.closest("[data-tab]"); if(!b) return; SFX.tap();
-  if(b.dataset.tab==="village"&&(visitId||where==="world")){ if(where==="world"&&!visitId){ where="map"; } else { go("village"); travelHome(); return; } }
+  // 채팅 등 다른 탭에서 마을을 누르면 있던 마을로 그대로 돌아가요. 마을 화면에서 한 번 더 누르면 우리 마을로
+  if(b.dataset.tab==="village"&&tab==="village"&&(visitId||where==="world")){ if(where==="world"&&!visitId){ where="map"; } else { travelHome(); return; } }
   go(b.dataset.tab); };
 function go(t){
   tab=t; if(t==="chat"&&chats.length) chatSeen=chats[chats.length-1].at;
@@ -1381,7 +1418,7 @@ function renderAct(){
   else if(sel&&!isMoving(W.map)){
     const k=sel.x+","+sel.y, f=fieldOf(o)[k], kind=tileKind(sel.x,sel.y);
     if(f){ const st=plotState(f), c=CROPS[f.crop];
-      if(st.stage==="ready") h=visiting?`<span class="grow">${c.ic} ${c.item||c.name}가 잘 익었어요</span><button class="btn sm" id="steal">🧺 몰래 수확하기</button>`:`<span class="grow">${c.ic} ${c.item||c.name} 다 자랐어요!</span><button class="btn sm" id="harvest">수확하기</button>`;
+      if(st.stage==="ready") h=visiting?`<span class="grow">${c.ic} ${c.item||c.name}가 잘 익었어요</span><button class="btn sm" id="steal">🧺 몰래 수확하기</button>`:`<span class="grow">${c.ic} ${c.item||c.name} 다 자랐어요!</span>${readySame(sel.x,sel.y).length>1?`<button class="btn sm sub" id="harvestMany">🧺 ${Math.min(10,readySame(sel.x,sel.y).length)}개 한 번에</button>`:""}<button class="btn sm" id="harvest">수확하기</button>`;
       else h=`<span class="grow">${c.ic} ${c.name} · <span id="actTime">${fmt(st.left)}</span> 남음</span>${visiting?"":`<button class="btn sm sub" id="dig">뽑기</button>`}`;
     } else if(kind==="grass"&&!visiting&&houseAt(S,sel.x,sel.y)<0){
       const used=Object.keys(fieldOf(S)).length, max=S.fieldMax||6;
@@ -1394,6 +1431,7 @@ function renderAct(){
   const b=id=>a.querySelector("#"+id);
   a.querySelectorAll("[data-plant]").forEach(x=>x.onclick=()=>plantAt(sel.x,sel.y,x.dataset.plant));
   if(b("harvest")) b("harvest").onclick=()=>harvestAt(sel.x,sel.y);
+  if(b("harvestMany")) b("harvestMany").onclick=()=>harvestMany(sel.x,sel.y);
   if(b("placeHouse")) b("placeHouse").onclick=()=>confirmHousePlace();
   if(b("buildHere")) b("buildHere").onclick=()=>buildHereSheet(sel.x,sel.y);
   if(b("cancelHouse")) b("cancelHouse").onclick=()=>{ housePlace=null; renderAct(); toast("집 짓기를 그만뒀어요"); };
@@ -1410,6 +1448,8 @@ function renderAct(){
 // ---------- 마을 지도 ----------
 function tapMap(fx,fy){
   const x=Math.floor(fx), y=Math.floor(fy), o=owner(), visiting=!!visitId;
+  if(jailTap(fx,fy)) return;
+  if(jailBlock()) return;
   if(toaTap(fx,fy)) return;
   if(pipiTap(fx,fy)) return;
   // 그림 친구에게 인사
@@ -1418,7 +1458,7 @@ function tapMap(fx,fy){
   if(stray&&!visiting&&Math.hypot(stray.x-fx,stray.y-fy)<.95){ walkTo(W.map,[[stray.x+(stray.x<W.map.x?.9:-.9),stray.y+.1]]); strayTap(); return; }
   // 동물
   for(let i=0;i<anims.length;i++){ const a=anims[i]; if(Math.hypot(a.x-fx,a.y-fy)<.6){
-    walkTo(W.map,[[Math.min(Math.max(fx,0.5),PEN.x-.4),fy]]); if(!visiting) animalTap(i); else voice(a.type); a.say=1.6; return; } }
+    walkTo(W.map,[[Math.min(Math.max(fx,0.5),PEN.x-.4),fy]]); if(!visiting) animalTap(i); else { voice(a.type); lureSheet(a.type); } a.say=1.6; return; } }
   const kind=tileKind(x,y);
   if(housePlace&&!visiting){ housePlace.x=Math.floor(fx)-1; housePlace.y=Math.floor(fy)-1; SFX.tap(); renderAct(); return; }
   // 누른 칸에 작물이 있으면 작물이 먼저 (집 창이 뜨지 않게)
@@ -1449,6 +1489,17 @@ function harvestAt(x,y){
   sel=null; SFX.harvest(); puff(x+.5,y+.4,"#ffd84d"); logAct(`${c.item||c.name} 수확`); save(); toast(`${c.item||c.name} ${yld}개 수확!${buffOn()?" 🍰 두 배!":""}${f.crop==="rice"?" 지푸라기 2개도 생겼어요":""}`);
   render();
 }
+// 같은 작물·나무를 10개까지 한 번에 수확 (가까운 것부터)
+function readySame(x,y){ const f=S.field[x+","+y]; if(!f) return [];
+  return Object.entries(S.field).filter(([k,p])=>p.crop===f.crop&&plotState(p).stage==="ready").map(([k])=>k.split(",").map(Number))
+    .sort((a,b)=>Math.hypot(a[0]-x,a[1]-y)-Math.hypot(b[0]-x,b[1]-y)); }
+function harvestMany(x,y){
+  const list=readySame(x,y).slice(0,10); if(!list.length) return; const f0=S.field[x+","+y], c=CROPS[f0.crop]; let total=0, hay=0;
+  list.forEach(([px,py])=>{ const k=px+","+py, f=S.field[k]; const yld=c.yield*(buffOn()?2:1); useEnergy("harvest"); addInv(f.crop,yld); total+=yld;
+    if(f.crop==="rice"){ addInv("hay",2); hay+=2; } if(c.regrow){ f.at=Date.now(); f.dur=c.regrow; } else delete S.field[k]; puff(px+.5,py+.4,"#ffd84d"); });
+  sel=null; SFX.harvest(); logAct(`${c.item||c.name} ${list.length}칸 한 번에 수확`); save();
+  toast(`🧺 ${list.length}칸에서 ${c.item||c.name} ${total}개 수확!${buffOn()?" 🍰 두 배!":""}${hay?` 지푸라기 ${hay}개도 생겼어요`:""}`); render();
+}
 function animalTap(i){
   const a=S.animals[i]; if(!a) return; const A=ANIMALS[a.type];
   voice(a.type);
@@ -1462,11 +1513,11 @@ function animalReady(a){ return (Date.now()-a.at)/1000>=ANIMALS[a.type].every; }
 function plotState(p){ const el=(Date.now()-p.at)/1000, pr=Math.min(1,el/p.dur); return {stage:pr>=1?"ready":"grow",pr,left:p.dur-el}; }
 function puff(x,y,color){ for(let i=0;i<10;i++) sparkles.push({x,y,vx:(Math.random()-.5)*2,vy:-Math.random()*2,life:1,color}); }
 function syncAnims(o){
-  const key=(o.animals||[]).map(a=>a.type).join(",")+"|"+(visitId||"");
+  const key=animalsOf(o).map(a=>a.type).join(",")+"|"+(visitId||"");
   if(key===animsKey) return; animsKey=key;
-  anims=(o.animals||[]).map((a,i)=>({type:a.type,i,x:PEN.x+.6+Math.random()*(PEN.w-1.2),y:PEN.y+.6+Math.random()*(PEN.h-1.2),tx:null,ty:null,wait:Math.random()*3,say:0}));
+  anims=animalsOf(o).map((a,i)=>({type:a.type,i,x:PEN.x+.6+Math.random()*(PEN.w-1.2),y:PEN.y+.6+Math.random()*(PEN.h-1.2),tx:null,ty:null,wait:Math.random()*3,say:0}));
 }
-function enterRoom(i=0){ if(S.ride){ if(S.ride==="car"&&visitId) parkedCar={pid:visitId,x:W.map.x,y:W.map.y}; S.ride=null; save(); } curHouse=i; floor=0; RC=8+3*Math.min(2,((housesOf(owner())[i])||{}).wing||0); where="room"; placing=null; resting=null; W.room.x=ROOM_DOOR.x+.5; W.room.y=ROOM_DOOR.y+.3; W.room.path=[]; fixBlockedFurniture(); SFX.tap(); render(); }
+function enterRoom(i=0){ if(jailBlock()) return; if(S.ride){ if(S.ride==="car"&&visitId) parkedCar={pid:visitId,x:W.map.x,y:W.map.y}; S.ride=null; save(); } curHouse=i; floor=0; RC=8+3*Math.min(2,((housesOf(owner())[i])||{}).wing||0); where="room"; placing=null; resting=null; W.room.x=ROOM_DOOR.x+.5; W.room.y=ROOM_DOOR.y+.3; W.room.path=[]; fixBlockedFurniture(); SFX.tap(); render(); }
 function leaveRoom(){ const d=houseDoor(housesOf(owner())[curHouse],curHouse); where="map"; floor=0; W.map.x=d.x+.5; W.map.y=d.y+.8; W.map.path=[]; needSnap=true; render(); }
 
 function drawMap(c,t,time,dt){
@@ -1550,14 +1601,16 @@ function drawMap(c,t,time,dt){
     else { const dx=a.tx-a.x, dy=a.ty-a.y, d=Math.hypot(dx,dy), sp=Math.min(d,dt*.7); a.x+=dx/d*sp; a.y+=dy/d*sp; }
     a.say=Math.max(0,a.say-dt);
     items.push({y:a.y,d:()=>{ const bob=Math.abs(Math.sin(time*4+a.i))*t*.05; emo(c,ANIMALS[a.type].ic,a.x*t,a.y*t-bob,t*.7);
-      const src=(o.animals||[])[a.i]; if(src&&animalReady(src)) emo(c,ANIMALS[a.type].product==="coin"?"🪙":ITEMS[ANIMALS[a.type].product].ic,a.x*t+t*.32,a.y*t-t*.38,t*.3);
+      const src=animalsOf(o)[a.i]; if(src&&animalReady(src)) emo(c,ANIMALS[a.type].product==="coin"?"🪙":ITEMS[ANIMALS[a.type].product].ic,a.x*t+t*.32,a.y*t-t*.38,t*.3);
       if(a.say>0) label(c,ANIMALS[a.type].say,a.x*t,a.y*t-t*.5,Math.max(11,t*.3)); }});
   });
+  drawGuardJail(items,c,t,time,o);
   const ph=peersHere();
-  const ownerOn=visitId&&onlineIds.has(visitId), away=visitId&&isAway(o)&&!ownerOn, signTxt=visitId&&!ownerOn&&!away&&o.sign?`🪧 ${o.sign}`:"";
-  if(visitId&&!away&&!signTxt&&!ph.some(p=>p.id===visitId)) items.push({y:DOOR.y+.4,d:()=>drawChar(c,o.char,(DOOR.x+1.6)*t,(DOOR.y+.4)*t,t,{name:o.nick,id:visitId})});
+  const ownerOn=visitId&&onlineIds.has(visitId), away=visitId&&isAway(o)&&!ownerOn, signTxt=visitId&&!ownerOn&&!away&&o.sign?`🪧 ${o.nick}: ${o.sign}`:"";
+  if(visitId&&!away&&!signTxt&&!ph.some(p=>p.id===visitId)) items.push({y:DOOR.y+.4,d:()=>{ drawChar(c,o.char,(DOOR.x+1.6)*t,(DOOR.y+.4)*t,t,{name:o.nick,id:visitId});
+    drawAwayTag(c,ownerOn?"🚶 마실 나갔어요":"💤 자리비움",(DOOR.x+1.6)*t,(DOOR.y+.4)*t-t*1.75,t); }});
   if(away) items.push({y:DOOR.y+.5,d:()=>drawSign(c,awayText(o),(DOOR.x+2.6)*t,(DOOR.y+.5)*t,t)});
-  else if(signTxt) items.push({y:DOOR.y+.5,d:()=>drawSign(c,signTxt,(DOOR.x+2.6)*t,(DOOR.y+.5)*t,t)});
+  else if(signTxt) items.push({y:DOOR.y+.5,d:()=>drawSign(c,signTxt,(DOOR.x+2.4)*t,(DOOR.y+.6)*t,t,1.35)});
   pushPeers(items,c,t,time);
   if(!visitId){ stepStray(dt,time); drawStray(items,c,t,time); }
   stepKids(dt); drawKids(items,c,t,time);
@@ -1601,14 +1654,17 @@ function stepStray(dt,time){
   const s=stray, me=W.map; s.t+=dt; s.said=Math.max(0,s.said-dt);
   const go=(tx,ty,sp)=>{ const dx=tx-s.x, dy=ty-s.y, d=Math.hypot(dx,dy); if(d<.05) return true; const st=Math.min(d,dt*sp); s.x+=dx/d*st; s.y+=dy/d*st; if(Math.abs(dx)>.02) s.dir=dx<0?1:-1; return false; };
   if(s.mode==="approach"){ if(go(me.x+(s.x<me.x?-.9:.9),me.y+.15,1.6)){ s.mode="idle"; s.said=2; voice(s.type); } }
-  else if(s.mode==="idle"){ if(Math.hypot(me.x-s.x,me.y-s.y)>2.2) s.mode="approach"; }
-  else if(s.mode==="eat"){ if(s.t>3){ s.mode="idle"; s.said=2; } }
+  else if(s.mode==="idle"){ if(s.byeAt!=null&&s.t>s.byeAt){ strayBye(s); } else if(Math.hypot(me.x-s.x,me.y-s.y)>2.2) s.mode="approach"; }
+  else if(s.mode==="eat"){ if(s.t>3){ strayBye(s); } }
+  else if(s.mode==="bye"){ if(go(s.fx,s.fy,1.8)||s.t>5) stray=null; }
   else if(s.mode==="follow"){
     const tx=me.x+(me.x<s.x?.8:-.8), ty=me.y+.2; go(tx,ty,3.4);
     if(!isMoving(me)&&Math.hypot(me.x-(DOOR.x+.5),me.y-(DOOR.y+1.2))<.3&&s.t>.6) adoptDone();
   }
   else if(s.mode==="flee"){ go(s.fx,s.fy,6); if(s.t>2.2) stray=null; }
 }
+// 한 번 놀아주면 인사하고 떠나요
+function strayBye(s){ const dx=s.x-W.map.x||1, dy=s.y-W.map.y, d=Math.hypot(dx,dy)||1; s.mode="bye"; s.t=0; s.said=2.5; s.fx=s.x+dx/d*8; s.fy=s.y+dy/d*8; s.byeAt=null; voice(s.type); }
 function drawStray(items,c,t,time){
   hearts=hearts.filter(h=>time-h.t0<1.4);
   if(stray){ const s=stray;
@@ -1622,6 +1678,7 @@ function drawStray(items,c,t,time){
       emo(c,s.type==="dog"?"🐕":"🐈",0,0,t*.85); c.restore();
       if(s.mode==="eat"){ emo(c,s.food,s.x*t-s.dir*t*.32,s.y*t+t*.18,t*.3); label(c,"냠냠",s.x*t,s.y*t-t*.5-Math.abs(Math.sin(time*8))*3,Math.max(11,t*.3),"#c2410c"); }
       else if(s.mode==="flee") label(c,s.type==="dog"?"깨갱!":"냐악!",s.x*t,s.y*t-t*.5,Math.max(11,t*.32),"#3b2f24");
+      else if(s.mode==="bye"&&s.t<2.5) label(c,"고마워요! 👋",s.x*t,s.y*t-t*.5,Math.max(11,t*.32),"#3b2f24");
       else if(s.mode==="follow") label(c,"살랑살랑",s.x*t,s.y*t-t*.5,Math.max(11,t*.28),"#3b2f24");
       else if(s.said>0) label(c,s.type==="dog"?"멍멍! 🐾":"야옹~ 🐾",s.x*t,s.y*t-t*.55,Math.max(11,t*.3),"#3b2f24");
       else if(s.mode==="idle") label(c,"눌러보세요 👆",s.x*t,s.y*t-t*.55+Math.sin(time*3)*2,Math.max(11,t*.28),"#c2410c");
@@ -1647,7 +1704,7 @@ function strayAct(act){
   const s=stray; if(!s) return; const name=s.type==="dog"?"강아지":"고양이", now=performance.now()/1000;
   if(act==="pet"){
     s.mode="idle"; s.said=2; for(let i=0;i<7;i++) hearts.push({x:s.x+(Math.random()-.5)*.5,y:s.y-.3,t0:now+i*.12,ph:Math.random()*6});
-    [880,1175].forEach((f,i)=>tone(f,.3,{at:i*.1,vol:.06,type:"triangle"})); voice(s.type); logAct(`${name} 쓰다듬기`); return;
+    [880,1175].forEach((f,i)=>tone(f,.3,{at:i*.1,vol:.06,type:"triangle"})); voice(s.type); logAct(`${name} 쓰다듬기`); s.byeAt=s.t+2.2; return;
   }
   if(act==="adopt"){
     if(S.animals.length>=MAX_ANIMALS){ toast("우리가 꽉 찼어요. 시장에서 팔지 않고는 더 데려올 수 없어요"); SFX.no(); return; }
@@ -1818,7 +1875,8 @@ function pipiTap(fx,fy){
   k.tx=null; k.wait=6;
   openSheet("📢 삐삐",`<div class="guide"><img src="${PIPI_IMG.src}" alt="삐삐" style="height:110px"><h2>소리 안 들리게 할까요?</h2></div>
     <div class="row"><button class="btn sub grow" id="pipiNo">아니오</button><button class="btn grow" id="pipiYes">네</button></div>`,w=>{
-    w.querySelector("#pipiYes").onclick=()=>{ closeSheet(); k.quiet=true; sayBubble("pipi","조용히 하겠다 삐삐 🤫"); logAct("삐삐 조용히 시키기"); };
+    w.querySelector("#pipiYes").onclick=()=>{ closeSheet(); k.quiet=true; sayBubble("pipi","조용히 하겠다 삐삐 🤫"); logAct("삐삐 조용히 시키기");
+      setTimeout(()=>{ if(pipi===k){ k.leaving=true; k.tx=PATH_X+.5; k.ty=MR-.6; } },1500); };
     w.querySelector("#pipiNo").onclick=()=>{ closeSheet(); sayBubble("pipi","고맙다 삐삐! 👋"); pipiBeep(); logAct("삐삐와 인사");
       setTimeout(()=>{ if(pipi===k){ k.leaving=true; k.tx=PATH_X+.5; k.ty=MR-.6; } },1800); };
   });
@@ -1827,8 +1885,13 @@ function pipiTap(fx,fy){
 
 // 여행 표지판: 나무 팻말에 문구
 function drawAwaySign(c,o,x,y,t){ drawSign(c,awayText(o),x,y,t); }
-function drawSign(c,txt,x,y,t){
-  const fs=Math.max(12,t*.3); c.font=`${fs}px "Gowun Dodum",sans-serif`;
+function drawAwayTag(c,txt,x,y,t){
+  const fs=Math.max(11,t*.28); c.font=`bold ${fs}px "Gowun Dodum",sans-serif`; const w=c.measureText(txt).width+14, h=fs+10;
+  c.save(); c.globalAlpha=.92; rr(c,x-w/2,y-h,w,h,h/2,"#5b6b7a"); c.restore();
+  c.fillStyle="#fff"; c.textAlign="center"; c.textBaseline="middle"; c.fillText(txt,x,y-h/2+1);
+}
+function drawSign(c,txt,x,y,t,scale=1){
+  const fs=Math.max(12,t*.3*scale); c.font=`${fs}px "Gowun Dodum",sans-serif`;
   const lines=wrapText(c,txt,t*5.2), lh=fs*1.3, w=Math.max(...lines.map(l=>c.measureText(l).width))+18, h=lines.length*lh+12;
   const bx=Math.max(camOX+4,Math.min(x-w/2,camOX+G.w-w-4)), by=y-h-t*.35;
   rr(c,x-t*.05,by+h-2,t*.1,t*.55,2,"#7a5232");
@@ -1994,7 +2057,7 @@ function villages(){
   list.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   return list.map((p,i)=>{ const s=SLOTS[i%SLOTS.length], ring=Math.floor(i/SLOTS.length); return {p,x:s[0]+ring*.6,y:s[1]+ring*.5}; });
 }
-function enterWorld(){
+function enterWorld(){ if(jailBlock()) return;
   const me=villages().find(v=>v.p.pid===(visitId||docId));
   where="world"; sel=null; W.world.path=[]; if(me){ W.world.x=me.x; W.world.y=me.y+1.1; }
   render();
@@ -2010,7 +2073,7 @@ function travelTo(v,after){
     else if(v.p.pid!==docId&&mode==="db"&&onlineIds.has(v.p.pid)) setTimeout(()=>{ if(visitId===v.p.pid) giftSheet(v.p); },900); });
   renderAct();
 }
-function travelHome(){
+function travelHome(){ if(jailBlock()) return;
   const homeV=villages().find(v=>v.p.pid===docId); if(homeV&&where!=="world"){ roadTrip(homeV); return; }
   if(where!=="world"){ const here=villages().find(v=>v.p.pid===visitId); where="world"; if(here){ W.world.x=here.x; W.world.y=here.y+1.1; } render(); }
   const home=villages().find(v=>v.p.pid===docId); if(home) travelTo(home);
@@ -2230,7 +2293,7 @@ function bagSheet(tb){
   if(tb) bagTab=tb;
   const keys=Object.keys(ITEMS).filter(k=>inv(k)>0);
   const have=keys.length?`<div class="list">${keys.map(k=>{ const it=ITEMS[k], u=usesOf(k);
-      const act=it.animal?`<button class="btn sm" data-pen="${k}">우리에 넣기</button>`:it.food?`<button class="btn sm" data-eat="${k}">먹기</button>`:it.wear?`<button class="btn sm" data-wear="${k}">착용하기</button>`:it.furn?`<button class="btn sm" data-furn="${k}">집에 들이기</button>`:"";
+      const act=it.animal?`<button class="btn sm" data-pen="${k}">우리에 넣기</button>`:it.food?`${(FOOD_EN[k]||10)<20&&inv(k)>1?`<button class="btn sm sub" data-eat20="${k}">⚡+20 먹기</button>`:""}<button class="btn sm" data-eat="${k}">먹기</button>`:it.wear?`<button class="btn sm" data-wear="${k}">착용하기</button>`:it.furn?`<button class="btn sm" data-furn="${k}">집에 들이기</button>`:"";
       const desc=it.animal?"우리가 꽉 차서 기다리는 동물이에요":it.food?`먹으면 ⚡+${FOOD_EN[k]||10}${k==="cake"?" · 30분 기운 펄펄":""}${u.length?` · ${u.slice(0,2).join("·")} 재료`:""}`:it.wear?"내 장신구로 착용해요":it.furn?"집 가구 보관함에 넣어 집에 놓아요":u.length?`${u.slice(0,4).join("·")}${u.length>4?" 등":""} 재료`:(MATS[k]?"집 짓는 재료":"시장에서 팔 수 있어요");
       return `<div class="item"><span class="ic">${it.ic}</span><span class="grow"><span class="nm">${it.name} ${inv(k)}개</span><br><span class="sub">${desc} · 🪙${it.sell}에 팔 수 있어요</span></span>${act}</div>`; }).join("")}</div>`
     :`<p class="note">가방이 비어 있어요. 수확하거나 동물을 돌보면 쌓여요.</p>`;
@@ -2246,10 +2309,11 @@ function bagSheet(tb){
       if(!useEnergy("craft",true)) return;
       Object.entries(r.need).forEach(([k,n])=>addInv(k,-n)); addInv(r.out,1);
       [523,659,784,1046].forEach((f,i)=>tone(f,.16,{at:i*.07,vol:.06,type:"triangle"})); logAct(`${it.name} 만들기`); save(); toast(`${it.ic} ${it.name}을(를) 만들었어요!`); bagSheet("craft"); });
-    w.querySelectorAll("[data-eat]").forEach(b=>b.onclick=()=>{ const k=b.dataset.eat, it=ITEMS[k], en=FOOD_EN[k]||10; addInv(k,-1);
+    w.querySelectorAll("[data-eat],[data-eat20]").forEach(b=>b.onclick=()=>{ const k=b.dataset.eat||b.dataset.eat20, it=ITEMS[k], one=FOOD_EN[k]||10;
+      const n=b.dataset.eat20?Math.min(inv(k),Math.ceil(20/one)):1, en=one*n; addInv(k,-n);
       setEnergy(energy()+en); if(k==="cake"){ S.buffUntil=Date.now()+BUFF_MS; updateEnergyUI(); toast("🍰 30분 동안 기운 펄펄! 걸음이 빨라지고, 수확이 두 배, 기운이 줄지 않아요"); }
-      sayBubble(docId,`냠냠 ${it.ic} ⚡+${en}`); const me=W[where]; for(let i=0;i<8;i++) sparkles.push({x:me.x,y:me.y-.6,vx:(Math.random()-.5)*1.6,vy:-Math.random()*1.8,life:1,color:"#ff7fa0"});
-      [660,880].forEach((f,i)=>tone(f,.15,{at:i*.12,vol:.06,type:"triangle"})); logAct(`${it.name} 먹기`); save(); closeSheet(); eating={ic:it.ic,until:Date.now()+2600}; if(tab!=="village") go("village"); focusSpeaker(docId,true); });
+      sayBubble(docId,`냠냠 ${it.ic}${n>1?`×${n}`:""} ⚡+${en}`); const me=W[where]; for(let i=0;i<8;i++) sparkles.push({x:me.x,y:me.y-.6,vx:(Math.random()-.5)*1.6,vy:-Math.random()*1.8,life:1,color:"#ff7fa0"});
+      [660,880].forEach((f,i)=>tone(f,.15,{at:i*.12,vol:.06,type:"triangle"})); logAct(`${it.name} ${n>1?n+"개 ":""}먹기`); save(); closeSheet(); eating={ic:it.ic,until:Date.now()+2600}; if(tab!=="village") go("village"); focusSpeaker(docId,true); });
     w.querySelectorAll("[data-wear]").forEach(b=>b.onclick=()=>{ const k=b.dataset.wear, id=ITEMS[k].wear; addInv(k,-1);
       if(!S.owned.includes(id)) S.owned.push(id); S.char[ACC[id].slot]=id; renderTop(); SFX.tap(); logAct(`${ITEMS[k].name} 착용`); save(); toast(`${ITEMS[k].name}을(를) 착용했어요. 꾸미기에서 벗을 수 있어요`); bagSheet("have"); });
     w.querySelectorAll("[data-pen]").forEach(b=>b.onclick=()=>{ const k=b.dataset.pen; if(S.animals.length>=MAX_ANIMALS){ toast("우리가 꽉 찼어요. 시장에서 동물을 팔면 자리가 생겨요"); SFX.no(); return; }
@@ -2264,6 +2328,7 @@ function siren(){ [0,.36,.72].forEach(a=>{ tone(920,.3,{at:a,type:"square",vol:.
 async function stealAt(x,y){
   const o=owner(), k=x+","+y, f=fieldOf(o)[k]; if(!visitId||!f||plotState(f).stage!=="ready") return;
   const c=CROPS[f.crop], n=c.yield, key=visitId+"|"+k+"|"+f.at; if(myTakes.has(key)) return;
+  if(guardOn(o)){ caughtByGuard(o,`${c.item||c.name} 몰래 수확`); return; }
   if(!useEnergy("steal",true)) return;
   const rec={to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:f.crop,n,key:k,plantedAt:f.at,at:Date.now(),applied:false,seen:false};
   myTakes.set(key,rec); addInv(f.crop,n); if(f.crop==="rice") addInv("hay",2);
@@ -2274,6 +2339,7 @@ async function stealAt(x,y){
 function processThefts(){
   if(!S||mode!=="db") return; let changed=false, fresh=0;
   thefts.forEach(t=>{ if(t.to!==docId||t.applied||handledThefts.has(t.id)) return; handledThefts.add(t.id); fresh++;
+    if(t.kind==="animal"){ const i=S.animals.findIndex(a=>a.type===t.animal); if(i>=0){ S.animals.splice(i,1); animsKey=""; changed=true; } db.doc("thefts/"+t.id).update({applied:true}).catch(()=>{}); return; }
     const f=S.field&&S.field[t.key];
     if(f&&f.at===t.plantedAt){ const c=CROPS[f.crop]; if(c&&c.regrow){ f.at=t.at; f.dur=c.regrow; } else delete S.field[t.key]; changed=true; }
     db.doc("thefts/"+t.id).update({applied:true}).catch(()=>{}); });
@@ -2286,8 +2352,8 @@ function policeSheet(){
   const th=thefts.filter(t=>t.to===docId&&!t.seen);
   if(!th.length){ toast("새로 출동한 일은 없어요"); return; }
   const by={}; th.forEach(t=>{ (by[t.from]=by[t.from]||{nick:t.fromNick,list:[]}).list.push(t); });
-  openSheet("🚓 경찰 출동!",`<div class="guide"><div class="gic siren">🚓</div><h2>누가 내 농작물을 수확해 갔어요!</h2>
-    ${Object.entries(by).map(([fid,g])=>`<div class="thief"><p><b>${esc(g.nick)}</b>님이 ${g.list.map(t=>`${itemIc(t.crop)} ${esc(itemName(t.crop))} ${t.n}개`).join(", ")}를 수확해 갔어요.</p>
+  openSheet("🚓 경찰 출동!",`<div class="guide"><div class="gic siren">🚓</div><h2>누가 내 농작물·동물을 몰래 가져갔어요!</h2>
+    ${Object.entries(by).map(([fid,g])=>`<div class="thief"><p><b>${esc(g.nick)}</b>님이 ${g.list.map(t=>t.kind==="animal"?`${ANIMALS[t.animal].ic} ${ANIMALS[t.animal].name} 1마리`:`${itemIc(t.crop)} ${esc(itemName(t.crop))} ${t.n}개`).join(", ")}를 몰래 데려갔어요.</p>
       <button class="btn sm" data-argue="${esc(fid)}" data-nick="${esc(g.nick)}">🚶 따지러 가기</button></div>`).join("")}</div>
     <button class="btn sub" data-close>알겠어요</button>`,w=>{
     w.querySelectorAll("[data-argue]").forEach(b=>b.onclick=()=>argueSheet(b.dataset.argue,b.dataset.nick)); });
@@ -2303,6 +2369,122 @@ function argueSheet(fid,nick){
       const target=villages().find(v=>v.p.pid===fid);
       if(!target){ toast(`${nick}님 방명록에 남겼어요`); return; }
       roadTrip(target,()=>{ sayBubble(docId,text); toast(`${nick}님 방명록에 남겼어요`); }); }); });
+}
+
+// ---------- 🐾 동물 유인하기 ----------
+const LURE_FOOD={chicken:"rice",cow:"hay",sheep:"apple",cat:"milk",dog:"cheese"};
+function animalsOf(o){
+  const list=o.animals||[]; if(o===S||!thefts.length) return list;
+  const pid=idFor(o.nick), take={};
+  thefts.forEach(t=>{ if(t.kind==="animal"&&t.to===pid&&!t.applied) take[t.animal]=(take[t.animal]||0)+1; });
+  if(!Object.keys(take).length) return list;
+  return list.filter(a=>{ if(take[a.type]>0){ take[a.type]--; return false; } return true; });
+}
+function lureSheet(type){
+  const o=owner(), A=ANIMALS[type], fk=LURE_FOOD[type], F=ITEMS[fk], have=inv(fk);
+  if(S.luring){ toast(`이미 ${ANIMALS[S.luring.type].name}가 따라오고 있어요. 먼저 집에 데려가요`); return; }
+  openSheet(`${A.ic} ${A.name} 유인하기`,`<div class="guide"><div class="gic">${A.ic}</div><h2>${esc(o.nick)}님의 ${A.name}를 데려갈까요?</h2>
+    <p>${A.name}가 좋아하는 <b>${F.ic} ${F.name}</b> 1개로 꾀어서 우리 집까지 데려가요. (가진 것 ${have}개)</p>
+    <p class="note">집 우리가 꽉 차 있으면 도착하자마자 도망가 버려요. 들키면 경찰이 출동하고, 보디가드가 있으면 감옥에 갇혀요!</p></div>
+    <div class="row"><button class="btn sub grow" data-close>그만둘래요</button><button class="btn grow" id="lureGo" ${have?"":"disabled"}>${F.ic} 주면서 유인하기</button></div>`,w=>{
+    w.querySelector("#lureGo").onclick=()=>{ closeSheet(); lureAnimal(type); }; });
+}
+function lureAnimal(type){
+  const o=owner(), A=ANIMALS[type], fk=LURE_FOOD[type]; if(!visitId||inv(fk)<1) return;
+  if(!animalsOf(o).some(a=>a.type===type)) return;
+  if(guardOn(o)){ caughtByGuard(o,`${A.name} 유인`); return; }
+  if(!useEnergy("steal",true)) return;
+  addInv(fk,-1);
+  const rec={kind:"animal",animal:type,to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:"a_"+type,n:1,at:Date.now(),applied:false,seen:false};
+  S.luring={type,from:visitId,fromNick:o.nick,at:Date.now()}; animsKey="";
+  if(mode==="db") db.collection("thefts").add(rec).catch(()=>{}); else thefts.unshift({id:"local"+Date.now(),...rec});
+  voice(type); siren(); sayBubble(docId,`${ITEMS[fk].ic} 이리 와~`); logAct(`${o.nick}님 ${A.name} 유인`); save();
+  toast(`${A.name}가 ${ITEMS[fk].name} 냄새를 맡고 따라와요! 집으로 데려가요 🚓 경찰이 출동했대요`); renderAct();
+}
+function settleLure(){
+  if(!S||!S.luring||visitId||where!=="map"||tab!=="village") return;
+  const A=ANIMALS[S.luring.type]; const type=S.luring.type; S.luring=null;
+  if(S.animals.length>=MAX_ANIMALS){ tone(900,.25,{to:300,type:"sawtooth",vol:.04}); voice(type); logAct(`${A.name}가 도망감 (우리 꽉 참)`);
+    toast(`앗! 우리가 꽉 차서 ${A.name}가 도망가 버렸어요 😢`); sayBubble(docId,`${A.ic} 안 돼~ 가지 마!`); }
+  else { S.animals.push({type,at:Date.now()}); animsKey=""; SFX.build(); voice(type); logAct(`${A.name} 데려오기 (유인)`); toast(`${A.ic} ${A.name}가 우리 집 우리에 들어왔어요`); }
+  save(); render();
+}
+
+// ---------- 🕴️ 보디가드 + 🔒 감옥 ----------
+const GUARD_COST=1000, JAIL={x:PATH_X+3.4,y:DOOR.y+3.2};
+let jails=[], jailNoticed=new Set();
+const guardOn=o=>!!o&&(o.guardUntil||0)>Date.now();
+const myJail=()=>S&&S.jail?jails.find(j=>j.id===S.jail.id)||S.jail:null;
+const jailed=()=>{ const j=myJail(); return !!j&&j.status!=="released"; };
+function caughtByGuard(o,what){
+  const id="j"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const rec={owner:visitId,ownerNick:o.nick,thief:docId,thiefNick:S.nick,what,at:Date.now(),status:"jailed",letters:[]};
+  S.jail={id,...rec}; sel=null; save(); jails.unshift({id,...rec});
+  if(mode==="db") db.doc("jails/"+id).set(rec).catch(()=>{});
+  siren(); sayBubble(docId,"으악! 잡혔다 😱"); logAct(`${o.nick}님 마을에서 보디가드에게 잡힘 (${what})`);
+  walkTo(W.map,[[JAIL.x,JAIL.y+.2]]); cam.follow=true;
+  openSheet("🕴️ 보디가드에게 잡혔어요!",`<div class="guide"><div class="gic siren">🔒</div><h2>${esc(o.nick)}님 보디가드가 지키고 있었어요</h2>
+    <p>감옥에 갇혔어요. ${esc(o.nick)}님이 와서 합의해 줘야 나갈 수 있어요. 그동안 반성문을 써서 낼 수 있어요.</p></div>
+    <button class="btn" id="jLetter">✍️ 반성문 쓰기</button><button class="btn sub" data-close>알겠어요</button>`,w=>{ w.querySelector("#jLetter").onclick=()=>letterSheet(); });
+}
+function jailBlock(){ if(!jailed()) return false; SFX.no(); toast(`🔒 감옥에 갇혀 있어요. ${myJail().ownerNick}님이 풀어줘야 나갈 수 있어요`); return true; }
+function enforceJail(){
+  if(!S||!jailed()) return; const j=myJail();
+  if(visitId!==j.owner||where!=="map"){ const v=villages().find(v=>v.p.pid===j.owner); if(!v) return; if(tab!=="village"){ tab="village"; renderTabs(); } arriveVillage(v); }
+  W.map.x=JAIL.x; W.map.y=JAIL.y+.2; W.map.path=[]; needSnap=false; camGoal=null; try{ snapCam(); }catch(e){}
+}
+function onJails(){
+  if(!S) return;
+  if(S.jail){ const j=jails.find(j=>j.id===S.jail.id);
+    if(j&&j.status==="released"){ const nick=S.jail.ownerNick; S.jail=null; save(); SFX.build(); sayBubble(docId,"자유다! 🙌"); logAct(`${nick}님이 감옥에서 풀어줌`);
+      openSheet("🤝 풀려났어요!",`<div class="guide"><div class="gic">🤝</div><h2>${esc(nick)}님이 합의해 줘서 감옥에서 나왔어요</h2><p>이제 어디든 갈 수 있어요.</p></div><button class="btn" data-close>고마워요</button>`); render(); } }
+  const mine=jails.filter(j=>j.owner===docId&&j.status==="jailed");
+  mine.forEach(j=>{ if(jailNoticed.has(j.id)) return; jailNoticed.add(j.id); if(inboxShown&&Date.now()-j.at<120000){ siren(); toast(`🕴️ 보디가드가 ${j.thiefNick}님을 잡아 감옥에 가뒀어요!`); } });
+  updateInboxBadge();
+}
+function letterSheet(){
+  const j=myJail(); if(!j) return;
+  openSheet("✍️ 반성문",`<p>${esc(j.ownerNick)}님에게 반성문을 써요. 낸 반성문은 ${esc(j.ownerNick)}님이 감옥에 와서 읽어요.</p>
+    ${(j.letters||[]).length?`<p class="note">지금까지 ${(j.letters||[]).length}장 냈어요.</p>`:""}
+    <textarea id="jText" rows="5" maxlength="300" placeholder="잘못했어요. 다시는 안 그럴게요…" style="width:100%;font:inherit;border-radius:12px;padding:10px;border:2px solid var(--line,#e3d8c3)"></textarea>
+    <div class="row"><button class="btn sub grow" data-close>나중에</button><button class="btn grow" id="jSend">제출하기</button></div>`,w=>{
+    w.querySelector("#jSend").onclick=async()=>{ const text=w.querySelector("#jText").value.trim(); if(!text){ toast("반성문을 써주세요"); return; }
+      const cur=myJail(), letters=[...(cur.letters||[]),{text,at:Date.now()}]; cur.letters=letters; if(S.jail) S.jail.letters=letters;
+      if(mode==="db") try{ await db.doc("jails/"+cur.id).update({letters}); }catch(e){}
+      save(); closeSheet(); SFX.note(); toast("반성문을 냈어요. 주인이 와서 읽을 거예요"); logAct("반성문 제출"); }; });
+}
+function releaseSheet(j){
+  openSheet("🔒 감옥",`<div class="guide"><div class="gic">🕴️</div><h2>${esc(j.thiefNick)}님이 갇혀 있어요</h2><p>${esc(j.what)}하다가 보디가드에게 잡혔어요.</p></div>
+    <h2 style="margin-top:4px">✍️ 반성문 ${(j.letters||[]).length}장</h2>
+    ${(j.letters||[]).length?`<div class="list">${j.letters.map(l=>`<div class="item" style="display:block"><p style="white-space:pre-wrap;margin:0">${esc(l.text)}</p><span class="sub">${new Date(l.at).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"})}</span></div>`).join("")}</div>`:`<p class="note">아직 낸 반성문이 없어요.</p>`}
+    <div class="row"><button class="btn sub grow" data-close>더 반성해</button><button class="btn grow" id="jFree">🤝 합의하고 풀어주기</button></div>`,w=>{
+    w.querySelector("#jFree").onclick=async()=>{ j.status="released"; if(mode==="db") try{ await db.doc("jails/"+j.id).update({status:"released",releasedAt:Date.now()}); }catch(e){}
+      closeSheet(); SFX.build(); sayBubble(docId,"🤝 이번만 봐줄게!"); logAct(`${j.thiefNick}님 감옥에서 풀어주기`); toast(`${j.thiefNick}님을 풀어줬어요`); updateInboxBadge(); render(); }; });
+}
+function goToJail(){
+  const j=jails.find(j=>j.owner===docId&&j.status==="jailed"); if(!j) return;
+  if(visitId){ toast("우리 마을로 돌아가서 감옥을 열어요"); const home=villages().find(v=>v.p.pid===docId); if(home) roadTrip(home,()=>goToJail()); return; }
+  if(tab!=="village") go("village"); if(where==="room") leaveRoom();
+  walkTo(W.map,[[JAIL.x+1.2,JAIL.y+.3]],()=>releaseSheet(j));
+}
+function jailTap(fx,fy){
+  if(Math.abs(fx-JAIL.x)>1||fy<JAIL.y-1.6||fy>JAIL.y+.6) return false;
+  if(jailed()&&visitId===myJail().owner){ letterSheet(); return true; }
+  if(!visitId){ const j=jails.find(j=>j.owner===docId&&j.status==="jailed"); if(j){ walkTo(W.map,[[JAIL.x+1.2,JAIL.y+.3]],()=>releaseSheet(j)); return true; } }
+  return false;
+}
+function drawGuardJail(items,c,t,time,o){
+  const pid=visitId||docId;
+  if(guardOn(o)) items.push({y:DOOR.y+.6,d:()=>{ const x=(DOOR.x-.9)*t, y=(DOOR.y+.6)*t; emo(c,"🕴️",x,y,t*.85); label(c,"보디가드",x,y-t*.95,Math.max(10,t*.26),"#2d3a4a"); }});
+  const inJail=jails.filter(j=>j.owner===pid&&j.status==="jailed");
+  if(inJail.length) items.push({y:JAIL.y+.3,d:()=>{ const x=JAIL.x*t, y=JAIL.y*t, w=t*1.5, h=t*1.7;
+    c.fillStyle="rgba(40,40,50,.18)"; c.fillRect(x-w/2,y-h+t*.3,w,h);
+    c.strokeStyle="#4a4f5a"; c.lineWidth=Math.max(2,t*.07);
+    for(let i=0;i<=5;i++){ const bx=x-w/2+i*w/5; c.beginPath(); c.moveTo(bx,y-h+t*.3); c.lineTo(bx,y+t*.3); c.stroke(); }
+    c.lineWidth=Math.max(3,t*.1); c.strokeRect(x-w/2,y-h+t*.3,w,h);
+    label(c,`🔒 감옥 · ${inJail.map(j=>j.thiefNick).join(", ")}`,x,y-h+t*.05,Math.max(10,t*.27),"#3b2f24"); }});
+  // 내가 갇혀 있으면 내 모습 위에 창살이 보이게 (주인 화면엔 상대가 창살 안에 보임)
+  if(S.luring&&where==="map"){ const m=W.map; items.push({y:m.y-.05,d:()=>{ const bob=Math.abs(Math.sin(time*7))*t*.06; emo(c,ANIMALS[S.luring.type].ic,(m.x-.75)*t,m.y*t-bob,t*.62); }}); }
 }
 
 // ---------- 집들이 선물 (친구가 집에 있을 때만) ----------
@@ -2397,7 +2579,7 @@ function drawGarage(c,o,t,time){
   rr(c,x+t*1.55,y+t*.05,t*.42,t*.42,t*.08,"#2f6fd6"); label(c,"P",x+t*1.76,y+t*.36,Math.max(10,t*.32),"#fff");
   if((o.vehicles||[]).includes("car")&&o.ride!=="car"&&!(o===S&&visitId)) emo(c,"🚗",x+t,y+t*1.55,t*.95); }
 // ---------- 지도 없이 바로 친구네 가기 ----------
-function goSheet(){
+function goSheet(){ if(jailBlock()) return;
   const vs=villages().filter(v=>v.p.pid!==(visitId||docId));
   openSheet("🚶 어디로 갈까요?",`<p class="note">${S.ride?`${VEHICLES[S.ride].ic} ${VEHICLES[S.ride].name}을(를) 타고 가요.`:"걸어서 가요. 탈것이 있으면 더 빨리 가요."}</p>
     <div class="list">${visitId?`<button class="item inboxitem" data-go="${docId}"><span class="ic">🏠</span><span class="grow"><span class="nm">우리 마을로 돌아가기</span></span>›</button>`:""}
@@ -2415,7 +2597,7 @@ function arriveVillage(v,after){
   if(after) setTimeout(after,700);
   else if(v.p.pid!==docId&&mode==="db"&&onlineIds.has(v.p.pid)) setTimeout(()=>{ if(visitId===v.p.pid) giftSheet(v.p); },900);
 }
-function roadTrip(v,after){
+function roadTrip(v,after){ if(jailBlock()) return;
   closeSheet(); if(tab!=="village"){ tab="village"; renderTabs(); } waterOff(); housePlace=null;
   if(!S.ride&&parkedCar){ S.ride="car"; parkedCar=null; }
   const veh=S.ride&&VEHICLES[S.ride], dur=veh?Math.round(2600/veh.speed):2600, home=v.p.pid===docId;
@@ -2487,10 +2669,12 @@ async function csBadge(n){ const b=$("csInboxBtn"); if(!b) return; if(n==null){ 
 function inboxItems(){
   if(!S) return [];
   const it=[], th=thefts.filter(t=>t.to===docId&&!t.seen);
-  if(th.length){ const names=[...new Set(th.map(t=>t.fromNick))]; it.push({k:"police",ic:"🚓",title:"경찰 출동! 누가 내 농작물을 수확해 갔어요",sub:`${names.join(", ")}님 · ${th.length}건`}); }
+  if(th.length){ const names=[...new Set(th.map(t=>t.fromNick))]; it.push({k:"police",ic:"🚓",title:"경찰 출동! 누가 내 농작물·동물을 가져갔어요",sub:`${names.join(", ")}님 · ${th.length}건`}); }
   const gp=gifts.filter(g=>g.to===docId&&g.status==="pending");
   if(gp.length) it.push({k:"gift",ic:"🎁",title:`집들이 선물 ${gp.length}개가 와 있어요`,sub:gp.map(g=>`${g.fromNick}: ${(ITEMS[g.item]||{}).name||""} ${g.n}개`).join(", ")});
   const dn=dmUnreadTotal(); if(dn){ const froms=[...new Set(dms.filter(m=>m.to===docId&&m.at>((S.dmSeen||{})[m.from]||0)).map(m=>m.fromNick))]; it.push({k:"dm",ic:"💌",title:`비밀 메시지 ${dn}개`,sub:froms.join(", ")+"님"}); }
+  const jl=jails.filter(j=>j.owner===docId&&j.status==="jailed");
+  if(jl.length) it.push({k:"jail",ic:"🕴️",title:`보디가드가 ${jl.length}명을 감옥에 가뒀어요`,sub:jl.map(j=>`${j.thiefNick}${(j.letters||[]).length?` · 반성문 ${(j.letters||[]).length}장`:""}`).join(", ")});
   const nn=myNotes.filter(n=>n.at>(S.notesSeenAt||0));
   if(nn.length) it.push({k:"notes",ic:nn.some(n=>n.kind==="argue")?"😤":"📖",title:`새 방명록 ${nn.length}개`,sub:`${nn[0].fromNick}: ${nn[0].text}`});
   return it;
@@ -2502,6 +2686,7 @@ function showInbox(force){
     <div class="list">${it.map(i=>`<button class="item inboxitem" data-ib="${i.k}"><span class="ic">${i.ic}</span><span class="grow"><span class="nm">${esc(i.title)}</span><br><span class="sub">${esc(i.sub)}</span></span><span aria-hidden="true">›</span></button>`).join("")}</div>
     <button class="btn sub" data-close>나중에 볼게요</button>`,w=>{
     w.querySelectorAll("[data-ib]").forEach(b=>b.onclick=()=>{ SFX.tap(); if(b.dataset.ib==="police") policeSheet(); else if(b.dataset.ib==="dm"){ const m=dms.filter(x=>x.to===docId&&x.at>((S.dmSeen||{})[x.from]||0)).sort((a,b)=>b.at-a.at)[0]; closeSheet(); chatMode="dm"; dmWith=m?m.from:null; go("chat"); }
+    else if(b.dataset.ib==="jail"){ closeSheet(); goToJail(); }
     else if(b.dataset.ib==="gift"){ closeSheet(); giftQueue=gifts.filter(g=>g.to===docId&&g.status==="pending"); showGiftAsk(); } else notesSheet(); }); });
   return true;
 }
@@ -2531,7 +2716,7 @@ $("bagBtn").onclick=()=>bagSheet();
 $("buildBtn").onclick=()=>houseSheet();
 $("notesBtn").onclick=()=>notesSheet();
 $("worldBtn").onclick=()=>goWorldWalk();
-function goWorldWalk(){
+function goWorldWalk(){ if(jailBlock()) return;
   if(tab!=="village") go("village");
   if(where==="world") return;
   if(where==="room"){ where="map"; const d=houseDoor(housesOf(owner())[curHouse],curHouse); W.map.x=d.x+.5; W.map.y=d.y+.8; W.map.path=[]; needSnap=true; render(); }
@@ -2575,9 +2760,11 @@ function vMarket(v){
     L.querySelectorAll("[data-s1]").forEach(b=>b.onclick=()=>sell(b.dataset.s1,1));
     L.querySelectorAll("[data-sa]").forEach(b=>b.onclick=()=>sell(b.dataset.sa,inv(b.dataset.sa)));
   } else if(marketMode==="buy"){
-    L.innerHTML=`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
+    const gLeft=(S.guardUntil||0)-Date.now();
+    L.innerHTML=`<div class="item"><span class="ic">🕴️</span><span class="grow"><span class="nm">보디가드 고용 (7일)</span><br><span class="sub">${gLeft>0?`지키는 중 · ${Math.ceil(gLeft/86400000)}일 남음`:"몰래 가져가려는 사람을 잡아 감옥에 가둬요"}</span></span><span class="price">🪙${GUARD_COST}</span><button class="btn sm" id="hireGuard">${gLeft>0?"연장":"고용"}</button></div>`+`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
       <span class="price">🪙${buyPrice(k)}</span><button class="btn sm sub" data-b1="${k}">1개</button>${ITEMS[k].buy?`<button class="btn sm" data-b12="${k}">12개</button>`:""}</div>`).join("");
     const buy=(k,n)=>{ if(!pay(buyPrice(k)*n)) return; logAct(`${ITEMS[k].name} ${n}개 사기`); addInv(k,n); save(); toast(`${ITEMS[k].name} ${n}개를 샀어요`); render(); };
+    L.querySelector("#hireGuard").onclick=()=>{ if(!pay(GUARD_COST)) return; S.guardUntil=Math.max(Date.now(),S.guardUntil||0)+7*86400000; logAct("보디가드 고용"); save(); SFX.build(); toast("🕴️ 보디가드가 일주일 동안 우리 마을을 지켜요"); render(); };
     L.querySelector("#moreField").onclick=()=>{ if(!pay(PLOT_COST)) return; S.fieldMax++; save(); toast(`이제 밭을 ${S.fieldMax}칸까지 쓸 수 있어요`); render(); };
     L.querySelectorAll("[data-b1]").forEach(b=>b.onclick=()=>buy(b.dataset.b1,1));
     L.querySelectorAll("[data-b12]").forEach(b=>b.onclick=()=>buy(b.dataset.b12,12));
@@ -2673,7 +2860,7 @@ function vNeighbors(v){
   const list=players.filter(p=>p.nick&&idFor(p.nick)!==docId&&(isOwnerView||shown(idFor(p.nick)))).sort((a,b)=>(onlineIds.has(idFor(b.nick))-onlineIds.has(idFor(a.nick))));
   v.innerHTML=`<div class="row"><h2 class="grow">이웃 마을</h2><button class="btn sm sub" id="nbWorld">🗺 전체지도</button></div>${list.length?`<div class="list">${list.map(p=>{ const on=onlineIds.has(idFor(p.nick)); return `<button class="neighbor" data-v="${esc(idFor(p.nick))}">${charImg(p.char||{})}<span class="grow"><b style="font-family:var(--display);font-weight:400;font-size:17px">${esc(p.nick)}</b> · ${esc(p.village)}${on?` <span class="on">● 접속 중</span>`:""}<br><span class="note">${isAway(p)&&!on?esc(awayText(p))+" · ":""}${p.house&&p.house.mat?`${MATS[p.house.mat]} ${p.house.level||1}층${housesOf(p).filter(h=>h.mat).length>1?` 외 ${housesOf(p).filter(h=>h.mat).length-1}채`:""}`:"집 짓는 중"} · 동물 ${(p.animals||[]).length}마리 · ${on?"지금 함께 있어요":ago(p.updatedAt||0)+" 접속"}</span></span>${siteHidden.has(idFor(p.nick))?`<span class="chip">숨김</span>`:`<span class="btn sm">찾아가기</span>`}</button><button class="btn sm sub hidebtn" data-dmto="${esc(idFor(p.nick))}">💌 비밀 채팅</button>${isOwnerView?`<button class="btn sm sub hidebtn" data-hide="${esc(idFor(p.nick))}">${siteHidden.has(idFor(p.nick))?"다시 보이기":"모두에게 숨기기"}</button>`:""}`}).join("")}</div>
     ${isOwnerView?`<p class="note">마을 주인만 보이는 버튼이에요. 숨긴 사람은 다른 사람 화면(전체지도, 이웃, 채팅, 함께 있는 캐릭터)에서 사라지고, 그 사람이 키운 마을과 기록은 그대로 남아요.</p>`:""}`
-    :`<p class="note">아직 이웃이 없어요. 이 페이지 링크를 가족, 친구에게 보내 마을 입구 비밀번호를 알려주세요.</p>`}`;
+    :`<p class="note">아직 이웃이 없어요. 이 페이지 링크를 가족, 친구에게 보내주세요.</p>`}`;
   v.querySelector("#nbWorld").onclick=()=>{ tab="village"; enterWorld(); renderTabs(); };
   v.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>toggleHidden(b.dataset.hide));
   v.querySelectorAll("[data-dmto]").forEach(b=>b.onclick=()=>openDm(b.dataset.dmto));
@@ -2834,7 +3021,9 @@ let nextCry=Date.now()+15000;
 let sleepTick=0, yawnAt=0;
 setInterval(()=>{
   if(!S) return;
-  if(tab==="village"&&where==="room"&&!visitId&&resting){ setEnergy(energy()+(resting==="bed"?1.2:.4)); if(++sleepTick%10===0) save(); }
+  settleLure();
+  if(jailed()&&tab==="village"&&(visitId!==myJail().owner||where!=="map"||Math.hypot(W.map.x-JAIL.x,W.map.y-JAIL.y-.2)>.9)&&!isMoving(W.map)) enforceJail();
+  if(tab==="village"&&where==="room"&&resting){ setEnergy(energy()+(resting==="bed"?(visitId?100/60:100/20):.4)); // 침대: 우리 집 20초, 친구 집 1분이면 0→100 if(++sleepTick%10===0) save(); }
   if(energy()<1&&!buffOn()&&isMoving(W[where])&&Date.now()>yawnAt){ yawnAt=Date.now()+7000; sayBubble(docId,"하암~ 배고파요 😪"); }
   updateEnergyUI();
   Object.entries(S.field||{}).forEach(([i,p])=>{
