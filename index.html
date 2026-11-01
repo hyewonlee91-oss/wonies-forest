@@ -390,11 +390,21 @@ table.dash time{color:var(--muted);margin-right:6px}
   <form class="panel" id="gateForm" novalidate>
     <input id="gatePw" type="hidden" value="">
     <p class="err" id="gateErr"></p>
-    <button class="btn" type="submit" id="gateRetry" hidden>다시 연결하기</button>
+    <button class="btn" type="submit" id="gateRetry" hidden onclick="if(typeof autoGate!=='function'){event.preventDefault();document.getElementById('gate').hidden=true;document.getElementById('login').hidden=false;}">다시 연결하기</button>
     <p class="note" id="connNote">마을에 연결하는 중이에요…</p>
   </form>
 </section>
 
+<script>
+// 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
+(function(){
+  var V="11.01-24";
+  window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
+  setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
+    var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
+    var b=document.getElementById("gateRetry"); if(b){ b.hidden=false; b.textContent="들어가기"; } },3000);
+})();
+</script>
 <!-- 2. 닉네임 + 내 비밀번호 -->
 <section id="login" class="screen" hidden>
   <h1 class="logo">누구세요?</h1>
@@ -453,7 +463,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-23</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-24</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
