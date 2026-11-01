@@ -284,7 +284,7 @@ main.fullgame{padding:0!important;gap:0!important;overflow:hidden!important;posi
 .ov-top>*{pointer-events:auto}
 .titlechip{background:rgba(255,250,240,.9);border:2px solid var(--line);border-radius:14px;padding:5px 10px;font-family:var(--display);font-size:15px;max-width:62%;overflow-wrap:anywhere}
 .titlechip small{display:flex;flex-wrap:wrap;gap:0 8px;font-family:var(--body);font-size:12px;color:var(--muted);line-height:1.35}
-.ov-btns{margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:46%}
+.ov-btns{margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:58%}
 .ovbtn{background:rgba(255,255,255,.92);border:2px solid var(--line);border-radius:12px;padding:6px 9px;font-size:13px;white-space:nowrap;line-height:1.2}
 .mapwrap.full .zoombtns{bottom:auto;top:50%;transform:translateY(-50%)}
 .ov-bottom{position:absolute;left:8px;right:8px;bottom:8px;display:flex;flex-direction:column;gap:6px;z-index:2;pointer-events:none;line-height:1.35}
@@ -398,7 +398,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <script>
 // 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
 (function(){
-  var V="11.01-24";
+  var V="11.01-25";
   window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
   setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
     var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
@@ -463,7 +463,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-24</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-25</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -1368,9 +1368,9 @@ function vVillage(v){
   const title=where==="world"?"전체지도":where==="room"?`${visiting?`${o.nick}님의 ${houseName(curHouse)}`:`우리 ${houseName(curHouse)}`}${floors>1?` ${floor+1}층`:""}`:(visiting?o.village:S.village);
   const ownerOn=visiting&&onlineIds.has(visitId);
   const info=visiting&&where!=="world"?(ownerOn?`<span class="on">● ${esc(o.nick)}님 지금 접속 중</span>`:`<span>${esc(doorText(o)||`${o.nick}님은 지금 외출 중이에요`)}</span>`):"";
-  const btns=visiting&&where!=="world"?`<button class="ovbtn" id="gbWrite">✏️ 방명록</button><button class="ovbtn" id="goHome">🏠 집으로</button>`
+  const btns=visiting&&where!=="world"?`<button class="ovbtn" id="bagOv">🎒 가방</button><button class="ovbtn" id="helpOv" aria-label="이용 안내">❓</button><button class="ovbtn" id="gbWrite">✏️ 방명록</button>${where==="map"?`<button class="ovbtn" id="goOv">🚶 놀러가기</button>`:""}<button class="ovbtn" id="goHome">🏠 집으로</button>`
     :where==="world"?`<button class="ovbtn" id="goHome">🏠 우리 마을</button>`
-    :`<button class="ovbtn" id="bagOv">🎒 가방</button>${where==="map"?`<button class="ovbtn" id="goOv">🚶 놀러가기</button><button class="ovbtn" id="toWorld">🗺 지도</button>`:""}`;
+    :`<button class="ovbtn" id="bagOv">🎒 가방</button><button class="ovbtn" id="helpOv" aria-label="이용 안내">❓</button>${where==="map"?`<button class="ovbtn" id="goOv">🚶 놀러가기</button><button class="ovbtn" id="toWorld">🗺 지도</button>`:""}`;
   const rideBtn=where==="map"&&(S.vehicles||[]).length?`<button class="ovbtn" id="rideOv">${S.ride?`${VEHICLES[S.ride].ic} 내리기`:"🚲 타기"}</button>`:"";
   v.innerHTML=`<div class="mapwrap full"><canvas id="map"></canvas>
     <div class="ov-top"><div class="titlechip">${esc(title)}<small>${info}<span id="onChip" ${onlineCount()?"":"hidden"}><span class="on">●</span> 접속 ${onlineCount()}명</span></small></div><div class="ov-btns">${btns}${rideBtn}</div></div>
@@ -1414,6 +1414,7 @@ function vVillage(v){
   if(q("gbWrite")) q("gbWrite").onclick=()=>guestbookSheet(o);
   if(q("bagOv")) q("bagOv").onclick=()=>{ SFX.tap(); bagSheet(); };
   if(q("goOv")) q("goOv").onclick=()=>{ SFX.tap(); goSheet(); };
+  if(q("helpOv")) q("helpOv").onclick=()=>{ SFX.tap(); showGuide(); };
   if(q("rideOv")) q("rideOv").onclick=()=>{ if(S.ride) setRide(null); else if((S.vehicles||[]).length===1) setRide(S.vehicles[0]); else rideSheet(); };
   q("talkForm").onsubmit=e=>{ e.preventDefault(); const inp=q("talkIn"), tx=inp.value.trim(); if(!tx) return; inp.value=""; sendChat(tx); inp.blur(); };
   renderAct(); startLoop();
