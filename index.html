@@ -453,7 +453,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-21</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.01-23</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -758,11 +758,14 @@ async function hashPin(nick,pin){
 }
 // 업데이트 소식: 새 소식을 넣을 때 NEWS에 날짜(id)와 내용을 적어요.
 // 사람마다 한 번만 떠요(다음 접속부터는 안 뜸). 비어 있으면 아무것도 안 떠요.
-const NEWS={id:"2026-11-01b", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
+const NEWS={id:"2026-11-01c", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
   {h:"🐾 다른 친구의 동물을 유인할 수 있어요", d:"친구 마을에서 동물을 누르고 좋아하는 음식을 주면 졸졸 따라와요. 닭은 🌾쌀, 소는 🪹지푸라기, 양은 🍎사과, 고양이는 🥛우유, 강아지는 🧀치즈를 좋아해요. 우리 집으로 데려가면 내 동물이 되는데, 우리가 꽉 차 있으면 도망가 버려요!"},
   {h:"🚓 농작물을 훔쳐가면 어떤 일이 벌어질지 몰라요", d:"친구 밭의 다 익은 작물을 몰래 수확할 수 있지만… 그 집에 누가 지키고 있을지도 몰라요. 잡히면 감옥에 갇히고, 집주인이 합의해 줘야 나올 수 있어요. 갇혀 있는 동안 ✍️ 반성문을 써서 낼 수 있어요."},
   {h:"🕴️ 우리 집은 보디가드가 지켜줘요", d:"시장 › 사기에서 보디가드를 일주일에 🪙1000으로 고용해요. 몰래 가져가려는 사람을 잡아 감옥에 가둬요. 알림(🔔)에서 반성문을 읽고 '합의하고 풀어주기'를 누르면 풀려나요."},
-  {h:"😴 친구 집 침대에서도 쉴 수 있어요", d:"⚡ 기운이 떨어지면 친구 집에 들어가 침대를 눌러보세요. 누워 있는 동안 기운이 차요."},
+  {h:"😴 친구 집 침대에서도 쉴 수 있어요", d:"기운이 떨어지면 침대를 눌러 누워요. 우리 집 침대는 20초, 친구 집 침대는 1분이면 기운이 가득 차요."},
+  {h:"🧺 10개 한 번에 수확", d:"다 익은 작물이나 나무를 누르면 '10개 한 번에' 버튼으로 같은 종류를 한꺼번에 거둬요."},
+  {h:"⚡ +20 먹기", d:"가방에서 '⚡+20 먹기'를 누르면 기운이 20 찰 만큼 한 번에 먹어요. 내 작물 수확은 한 칸에 기운 3, 친구 것을 몰래 가져가면 10이 들어요."},
+  {h:"💬 채팅하고 돌아오기", d:"채팅하다가 뒤로가기나 마을 탭을 누르면 있던 친구 마을로 돌아가요."},
   {h:"🪧 나갈 때 팻말을 걸어요", d:"메뉴 › 나가기나 뒤로가기를 누르면 '이따 다시 올게요 / 회사 다녀올게요🥲 / 현실약속 다녀올게요' 중에 골라요. 팻말은 집 옆에 크게 보이고, 주인이 없는 집엔 💤 자리비움이 떠요."},
   {h:"🚪 이제 비밀번호 없이 바로 들어와요", d:"링크를 열면 입구 비밀번호 없이 바로 닉네임 화면이 나와요. 길강아지·고양이와 📢 삐삐는 한 번 놀아주면 인사하고 떠나요."}
 ], old:[
@@ -834,13 +837,18 @@ addEventListener("pagehide",()=>{ if(dirty) flush(); });
 // =====================================================================
 // 입장 흐름
 // =====================================================================
-// 입구 비밀번호 화면 없음: 열리자마자 자동으로 마을에 연결하고 바로 로그인 화면
-async function autoGate(){
-  $("gateErr").textContent=""; $("gateRetry").hidden=true; $("connNote").textContent="마을에 연결하는 중이에요…";
-  let ok=false; try{ ok=window.__gateCheck?await window.__gateCheck(GATE_PW):true; }catch(e){}
+// 입구 비밀번호 화면 없음: 열리자마자 닉네임 화면을 보여주고, 마을 연결은 뒤에서 해요
+let gateP=null;
+function startGate(){
+  if(!window.__gateCheck) return gateP=Promise.resolve(true);
+  const once=()=>Promise.race([window.__gateCheck(GATE_PW).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),8000))]);
+  gateP=(async()=>{ for(let i=0;i<3;i++){ if(await once()) return true; } return false; })();
+  gateP.then(ok=>{ if(!ok) gateP=null; }); return gateP;
+}
+function autoGate(){
   if(!$("locked").hidden||S) return;
-  if(!ok){ $("gateErr").textContent="마을에 연결하지 못했어요. 인터넷을 확인하고 다시 눌러주세요."; $("gateRetry").hidden=false; return; }
-  show("login"); const last=ls.get("dv:lastNick"); if(last) $("nick").value=last;
+  if(!gateP) startGate();
+  show("login"); const last=ls.get("dv:lastNick"); if(last&&!$("nick").value) $("nick").value=last;
 }
 $("gateForm").addEventListener("submit",e=>{ e.preventDefault(); audio(); autoGate(); });
 setTimeout(autoGate,0);
@@ -851,6 +859,7 @@ $("loginForm").addEventListener("submit",async e=>{
   if(!/^[가-힣a-zA-Z0-9]{2,10}$/.test(nick)){ err.textContent="닉네임은 한글, 영문, 숫자로 2~10자예요."; return; }
   if(!/^\d{4}$/.test(pin)){ err.textContent="비밀번호는 숫자 4자리예요."; return; }
   const btn=$("loginBtn"); btn.disabled=true; err.textContent=""; btn.textContent="마을 불러오는 중…";
+  if(window.__gateCheck){ const ok=await (gateP||startGate()); if(!ok){ btn.disabled=false; btn.textContent="들어가기"; err.textContent="마을에 연결하지 못했어요. 인터넷을 확인하고 다시 눌러주세요."; return; } }
   let res;
   try{
     await waitReady(12000); if(!dbReady){ dbReady=true; mode="local"; }
@@ -977,10 +986,10 @@ const GUIDE=[
   {ic:"🏕",title:"🏕워니의숲에 오신 걸 환영해요!",text:"시장에서 필요한 재료를 사와서 집도 짓고 동물도 키우고 장신구도 사보세요 :)"},
   {ic:"👋",title:"친구네 놀러 가기",text:"친구의 집에 놀러가서 채팅도 하고 같이 워니의숲을 돌아다녀보세요. 친구가 집에 없으면 방명록을 남길 수도 있어요✏️"},
   {ic:"📖",title:"이렇게 즐겨요",text:"워니의숲에서 할 수 있는 것들이에요.",list:[
-    {h:"🌱 농사 짓기", d:"시장에서 씨앗을 사서 밭에 심고, 다 자라면 수확해서 시장에 팔아요. 밭 칸은 시장에서 늘릴 수 있어요."},
+    {h:"🌱 농사 짓기", d:"시장에서 씨앗을 사서 밭에 심고, 다 자라면 수확해서 시장에 팔아요. '10개 한 번에'로 한꺼번에 거둘 수 있고, 밭 칸은 시장에서 늘려요."},
     {h:"🐔 동물 키우기", d:"시장 › 동물에서 데려와 우리에서 키워요. 때가 되면 달걀·우유·양털을 주고, 강아지·고양이는 동전을 물어와요."},
     {h:"🏠 집 짓고 꾸미기", d:"빈 풀밭을 누르면 그 자리에 집을 지어요. 층 올리기, 옆으로 넓히기, 울타리도 되고 집 안에서 가구를 놓고 돌리고 다른 층으로 옮길 수 있어요."},
-    {h:"⚡ 기운", d:"심기·수확·만들기에 기운을 써요. 음식을 먹거나 침대에서 쉬면 다시 차고(친구 집 침대도 돼요), 케이크를 먹으면 30분 동안 기운 펄펄!"},
+    {h:"⚡ 기운", d:"심기·수확·만들기에 기운을 써요(내 작물 수확 3, 친구 것 몰래 가져가기 10). 음식을 먹거나('⚡+20 먹기'로 한 번에) 침대에서 쉬면 다시 차요. 우리 집 침대는 20초, 친구 집 침대는 1분이면 가득! 케이크를 먹으면 30분 동안 기운 펄펄!"},
     {h:"🎒 만들기", d:"가방 › 만들기에서 양털·우유·과일로 먹거리, 털장갑 같은 장신구, 이불 같은 가구를 만들어요."},
     {h:"🚲 탈것", d:"🚲 타기 버튼으로 탈것을 사고 타요. 탈것을 타면 친구 마을에 더 빨리 가요. 자동차는 차고가 있어야 해요."},
     {h:"👋 친구와 놀기", d:"🚶 놀러가기로 친구 마을에 가요. 채팅, 💌 비밀 메시지, ✏️ 방명록을 남길 수 있고, 친구가 집에 있으면 🎁 집들이 선물도 줄 수 있어요."},
@@ -3023,7 +3032,7 @@ setInterval(()=>{
   if(!S) return;
   settleLure();
   if(jailed()&&tab==="village"&&(visitId!==myJail().owner||where!=="map"||Math.hypot(W.map.x-JAIL.x,W.map.y-JAIL.y-.2)>.9)&&!isMoving(W.map)) enforceJail();
-  if(tab==="village"&&where==="room"&&resting){ setEnergy(energy()+(resting==="bed"?(visitId?100/60:100/20):.4)); // 침대: 우리 집 20초, 친구 집 1분이면 0→100 if(++sleepTick%10===0) save(); }
+  if(tab==="village"&&where==="room"&&resting){ setEnergy(energy()+(resting==="bed"?(visitId?100/60:100/20):.4)); /* 침대: 우리 집 20초, 친구 집 1분이면 0→100 */ if(++sleepTick%10===0) save(); }
   if(energy()<1&&!buffOn()&&isMoving(W[where])&&Date.now()>yawnAt){ yawnAt=Date.now()+7000; sayBubble(docId,"하암~ 배고파요 😪"); }
   updateEnergyUI();
   Object.entries(S.field||{}).forEach(([i,p])=>{
