@@ -398,7 +398,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <script>
 // 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
 (function(){
-  var V="11.02-3";
+  var V="11.03-1";
   window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
   setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
     var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
@@ -463,7 +463,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.02-3</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.03-1</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -1256,7 +1256,12 @@ let fishes=[], nextFish=0, birds=[];
 let onlineIds=new Set(), roomCap=null;
 
 function owner(){ if(!visitId) return S; const p=players.find(p=>idFor(p.nick)===visitId); if(p) visitCache=p; return visitCache||S; }
+const fieldMemo=new WeakMap();
 function fieldOf(o){
+  if(o!==S){ const m=fieldMemo.get(o); if(m&&m.th===thefts&&m.mt===myTakes.size) return m.out; const out=fieldOfRaw(o); fieldMemo.set(o,{th:thefts,mt:myTakes.size,out}); return out; }
+  return fieldOfRaw(o);
+}
+function fieldOfRaw(o){
   let base; if(o.mapV2||o===S) base=o.field||{}; else { if(!fieldCache.has(o)) fieldCache.set(o,convertField(o.field)); base=fieldCache.get(o); }
   if(o===S||(!thefts.length&&!myTakes.size)) return base;
   const pid=idFor(o.nick); let out=null;
@@ -1284,7 +1289,17 @@ function svgImg(svg,w,h){
 const charSprite=(c,pose)=>svgImg(charImg(c||{},pose),100,122);
 const houseSprite=h=>svgImg(houseSVG(h),160+60*Math.min(2,(h&&h.wing)||0),120);
 const EMOJI='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-function emo(c,ch,x,y,size){ c.font=`${size}px ${EMOJI}`; c.textAlign="center"; c.textBaseline="middle"; c.fillStyle="#000"; c.fillText(ch,x,y); }
+// 이모지는 한 번 그려둔 그림을 재사용해요 (휴대폰에서 매 프레임 글자를 새로 그리면 렉이 걸려서)
+const emoCache=new Map();
+function emo(c,ch,x,y,size){
+  if(!(size>1)) return;
+  const dpr=Math.min(2,devicePixelRatio||1), q=size<24?Math.round(size):Math.round(size/4)*4, key=ch+"|"+q;
+  let cv=emoCache.get(key);
+  if(!cv){ if(emoCache.size>700) emoCache.clear();
+    const S2=Math.ceil(q*1.5*dpr)+2; cv=document.createElement("canvas"); cv.width=cv.height=S2; const g=cv.getContext("2d");
+    g.font=`${q*dpr}px ${EMOJI}`; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle="#000"; g.fillText(ch,S2/2,S2/2); emoCache.set(key,cv); }
+  const d=cv.width/dpr*(size/q); c.drawImage(cv,x-d/2,y-d/2,d,d);
+}
 function label(c,txt,x,y,size,color="#3b2f24"){
   c.font=`${size}px Jua,"Gowun Dodum",sans-serif`; c.textAlign="center"; c.textBaseline="alphabetic";
   c.lineWidth=3; c.strokeStyle="#fff"; c.strokeText(txt,x,y); c.fillStyle=color; c.fillText(txt,x,y);
@@ -1504,6 +1519,8 @@ function tapMap(fx,fy){
   walkTo(W.map,[[x+.5,y+.62]],()=>{ if(!visiting&&f&&plotState(f).stage==="ready") harvestSmart(x,y); renderAct(); });
   renderAct();
 }
+// 수확·동물 돌보기 뒤엔 화면 전체를 새로 만들지 않고 필요한 곳만 바꿔요 (렉 줄이기)
+function refreshVillage(){ if(tab!=="village"){ render(); return; } renderTop(); renderAct(); }
 function plantAt(x,y,ck){
   const c=CROPS[ck]; if(S.coins<c.cost){ toast(`동전이 ${c.cost-S.coins}개 모자라요`); SFX.no(); return; }
   if(!useEnergy("plant",true)) return;
@@ -1515,7 +1532,7 @@ function harvestAt(x,y){
   const c=CROPS[f.crop], yld=c.yield*(buffOn()?2:1); useEnergy("harvest"); addInv(f.crop,yld); if(f.crop==="rice") addInv("hay",2);
   if(c.regrow){ f.at=Date.now(); f.dur=c.regrow; } else delete S.field[k];
   sel=null; SFX.harvest(); puff(x+.5,y+.4,"#ffd84d"); logAct(`${c.item||c.name} 수확`); save(); toast(`${c.item||c.name} ${yld}개 수확!${buffOn()?" 🍰 두 배!":""}${f.crop==="rice"?" 지푸라기 2개도 생겼어요":""}`);
-  render();
+  refreshVillage();
 }
 // 다 익은 게 10개 이상이면 한 번에 10개씩 수확 (12개면 10개 → 1개 → 1개). 누른 것부터, 가까운 순서로
 function readyAll(x,y){
@@ -1528,7 +1545,7 @@ function harvestMany(x,y){
     if(f.crop==="rice"){ addInv("hay",2); hay+=2; } if(c.regrow){ f.at=Date.now(); f.dur=c.regrow; } else delete S.field[k]; puff(px+.5,py+.4,"#ffd84d"); });
   const txt=Object.entries(got).map(([k,n])=>`${CROPS[k].item||CROPS[k].name} ${n}개`).join(", ");
   sel=null; SFX.harvest(); logAct(`${list.length}칸 한 번에 수확 (${txt})`); save();
-  toast(`🧺 ${list.length}칸 한 번에 수확! ${txt}${buffOn()?" 🍰 두 배!":""}${hay?` · 지푸라기 ${hay}개`:""}`); render();
+  toast(`🧺 ${list.length}칸 한 번에 수확! ${txt}${buffOn()?" 🍰 두 배!":""}${hay?` · 지푸라기 ${hay}개`:""}`); refreshVillage();
 }
 function animalTap(i){
   const a=S.animals[i]; if(!a) return; const A=ANIMALS[a.type];
@@ -1536,7 +1553,7 @@ function animalTap(i){
   if(animalReady(a)){ useEnergy("animal");
     if(A.product==="coin"){ const n=5+Math.floor(Math.random()*11); S.coins+=n; SFX.coin(); toast(`${A.name}가 동전 ${n}개를 물어왔어요`); }
     else { addInv(A.product,1); SFX.harvest(); toast(`${ITEMS[A.product].name} 1개를 얻었어요`); }
-    a.at=Date.now(); save(); render();
+    a.at=Date.now(); save(); refreshVillage();
   }
 }
 function animalReady(a){ return (Date.now()-a.at)/1000>=ANIMALS[a.type].every; }
