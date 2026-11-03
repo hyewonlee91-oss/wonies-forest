@@ -287,6 +287,7 @@ main.fullgame{padding:0!important;gap:0!important;overflow:hidden!important;posi
 #giantBanner{position:fixed;left:50%;top:calc(90px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;padding:14px 22px;border-radius:18px;font:400 18px/1.35 var(--display);text-align:center;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}
 #giantBanner b{font-size:22px;font-weight:400}
 #giantBanner.alarm{background:#d6283c;animation:gbFlash .35s steps(2) 8}
+#giantBanner.sleep{background:#3a5a9a;animation:gbPop .4s ease-out}
 #giantBanner.win{background:linear-gradient(135deg,#ffb703,#fb5607);animation:gbPop .4s ease-out}
 @keyframes gbFlash{50%{background:#7a0f1c}}
 @keyframes gbPop{0%{transform:translateX(-50%) scale(.6)}70%{transform:translateX(-50%) scale(1.08)}100%{transform:translateX(-50%) scale(1)}}
@@ -423,7 +424,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <script>
 // 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
 (function(){
-  var V="11.03-2";
+  var V="11.03-3";
   window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
   setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
     var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
@@ -488,7 +489,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.03-2</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.03-3</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -2435,7 +2436,7 @@ function siren(){ [0,.36,.72].forEach(a=>{ tone(920,.3,{at:a,type:"square",vol:.
 async function stealAt(x,y){
   const o=owner(), k=x+","+y, f=fieldOf(o)[k]; if(!visitId||!f||plotState(f).stage!=="ready") return;
   const c=CROPS[f.crop], n=c.yield, key=visitId+"|"+k+"|"+f.at; if(myTakes.has(key)){ toast("방금 가져간 작물이에요"); return; }
-  if(guardOn(o)){ caughtByGuard(o,`${c.item||c.name} 몰래 수확`); return; }
+  if(guardWatching(o)){ caughtByGuard(o,`${c.item||c.name} 몰래 수확`); return; }
   if(!useEnergy("steal",true)) return;
   const rec={to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:f.crop,n,key:k,plantedAt:f.at,at:Date.now(),applied:false,seen:false};
   myTakes.set(key,rec); addInv(f.crop,n); if(f.crop==="rice") addInv("hay",2);
@@ -2499,7 +2500,7 @@ function lureSheet(type){
 function lureAnimal(type){
   const o=owner(), A=ANIMALS[type], fk=LURE_FOOD[type]; if(!visitId||inv(fk)<1) return;
   if(!animalsOf(o).some(a=>a.type===type)) return;
-  if(guardOn(o)){ caughtByGuard(o,`${A.name} 유인`); return; }
+  if(guardWatching(o)){ caughtByGuard(o,`${A.name} 유인`); return; }
   if(!useEnergy("steal",true)) return;
   addInv(fk,-1);
   const rec={kind:"animal",animal:type,to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:"a_"+type,n:1,at:Date.now(),applied:false,seen:false};
@@ -2523,6 +2524,62 @@ let jails=[], jailNoticed=new Set();
 const guardOn=o=>!!o&&(o.guardUntil||0)>Date.now();
 const myJail=()=>S&&S.jail?jails.find(j=>j.id===S.jail.id)||S.jail:null;
 const jailed=()=>{ const j=myJail(); return !!j&&j.status==="jailed"; };
+// 😴 보디가드는 30분마다 10분씩 졸아요 (집마다 시간이 달라요). 졸다가 가끔 눈을 떠요
+function hashStr(x){ let h=0; for(const ch of String(x)) h=(h*31+ch.charCodeAt(0))|0; return Math.abs(h); }
+function guardAsleep(o){ if(!guardOn(o)) return false; const m=(Date.now()/60000+hashStr(idFor(o.nick))%30)%30; return m<10; }
+let gPeek={until:0,quiet:0,next:0,snoreAt:0,pid:null,banner:null};
+const guardPeeking=()=>Date.now()<gPeek.until&&Date.now()>=gPeek.quiet;
+function guardWatching(o){ return guardOn(o)&&(!guardAsleep(o)||guardPeeking()); }
+function snore(){ tone(70,.9,{to:52,vol:.11,type:"sawtooth"}); tone(140,.8,{to:100,vol:.05,type:"triangle"}); tone(95,.5,{at:1.1,to:130,vol:.05,type:"sine"}); }
+function guardTick(){
+  if(!S||!visitId||tab!=="village"||where!=="map"){ gPeek.pid=null; return; }
+  const o=owner(); if(!guardOn(o)){ gPeek.pid=null; return; }
+  const now=Date.now(), asleep=guardAsleep(o);
+  if(gPeek.pid!==visitId||gPeek.banner!==asleep){ gPeek.pid=visitId; gPeek.banner=asleep; gPeek.next=now+7000+Math.random()*8000; gPeek.until=0;
+    if(asleep){ giantBanner(`😴 보디가드가 졸고 있어요!<br><b>쉿… 지금이 기회?!</b>`,"sleep"); snore(); } }
+  if(!asleep) return;
+  if(now>gPeek.next&&now>gPeek.until){ gPeek.quiet=now+1300; gPeek.until=gPeek.quiet+2600; gPeek.next=gPeek.until+14000+Math.random()*22000; }
+  if(guardPeeking()&&!gPeek.saw){ gPeek.saw=true; tone(880,.08,{vol:.05}); tone(1100,.1,{at:.1,vol:.05}); }
+  if(!guardPeeking()) gPeek.saw=false;
+  if(now>gPeek.snoreAt&&now>gPeek.until&&now<gPeek.next-1300){ gPeek.snoreAt=now+2800; snore(); }
+}
+function drawGuard(c,t,time,o){
+  const asleep=guardAsleep(o), peek=asleep&&guardPeeking(), x=(DOOR.x-1.6)*t, base=(DOOR.y+1.2)*t, H=t*2.8, nod=asleep&&!peek?Math.sin(time*1.3)*t*.05:0;
+  c.save(); c.fillStyle="rgba(0,0,0,.2)"; c.beginPath(); c.ellipse(x,base,t*.55,t*.15,0,0,Math.PI*2); c.fill();
+  // 다리·몸
+  rr(c,x-t*.32,base-H*.36,t*.26,H*.36,4,"#1f2633"); rr(c,x+t*.06,base-H*.36,t*.26,H*.36,4,"#1f2633");
+  rr(c,x-t*.55,base-H*.78,t*1.1,H*.46,t*.2,"#2b3445");
+  c.fillStyle="#fff"; c.beginPath(); c.moveTo(x-t*.2,base-H*.78); c.lineTo(x+t*.2,base-H*.78); c.lineTo(x,base-H*.58); c.closePath(); c.fill();
+  c.fillStyle="#d6283c"; c.beginPath(); c.moveTo(x-t*.06,base-H*.74); c.lineTo(x+t*.06,base-H*.74); c.lineTo(x+t*.08,base-H*.52); c.lineTo(x,base-H*.47); c.lineTo(x-t*.08,base-H*.52); c.closePath(); c.fill();
+  // 팔짱
+  rr(c,x-t*.62,base-H*.66,t*1.24,t*.24,t*.12,"#232b3a");
+  // 머리
+  const hx=x, hy=base-H*.92+nod, hr=t*.5;
+  c.fillStyle="#f2c9a0"; c.beginPath(); c.arc(hx,hy,hr,0,Math.PI*2); c.fill();
+  c.fillStyle="#1b1b1b"; c.beginPath(); c.arc(hx,hy-hr*.25,hr*1.02,Math.PI*1.05,Math.PI*1.95); c.fill();
+  c.strokeStyle="#2a1d14"; c.lineCap="round"; c.lineWidth=Math.max(2,t*.07);
+  if(!asleep){ // 깨어 있음: 선글라스
+    c.fillStyle="#111"; rr(c,hx-hr*.78,hy-hr*.18,hr*.66,hr*.36,hr*.12,"#111"); rr(c,hx+hr*.12,hy-hr*.18,hr*.66,hr*.36,hr*.12,"#111");
+    c.beginPath(); c.moveTo(hx-hr*.12,hy-hr*.05); c.lineTo(hx+hr*.12,hy-hr*.05); c.stroke();
+    c.beginPath(); c.moveTo(hx-hr*.25,hy+hr*.45); c.lineTo(hx+hr*.25,hy+hr*.45); c.stroke();
+  } else if(peek){ // 눈 번쩍!
+    [-1,1].forEach(sx=>{ c.fillStyle="#fff"; c.beginPath(); c.arc(hx+sx*hr*.38,hy-hr*.02,hr*.26,0,Math.PI*2); c.fill(); c.stroke();
+      c.fillStyle="#111"; c.beginPath(); c.arc(hx+sx*hr*.38+Math.sin(time*6)*hr*.08,hy,hr*.12,0,Math.PI*2); c.fill();
+      c.beginPath(); c.moveTo(hx+sx*hr*.6,hy-hr*.42); c.lineTo(hx+sx*hr*.18,hy-hr*.36); c.stroke(); });
+    c.beginPath(); c.arc(hx,hy+hr*.5,hr*.14,0,Math.PI*2); c.stroke();
+    label(c,"…?! 👀",hx,hy-hr*1.75,Math.max(14,t*.45),"#d6283c");
+  } else { // 꾸벅꾸벅: 감은 눈 (크게)
+    c.lineWidth=Math.max(3,t*.09);
+    [-1,1].forEach(sx=>{ c.beginPath(); c.arc(hx+sx*hr*.38,hy-hr*.08,hr*.2,Math.PI*.1,Math.PI*.9); c.stroke(); });
+    c.lineWidth=Math.max(2,t*.06); c.beginPath(); c.ellipse(hx,hy+hr*.48,hr*.16,hr*.1+Math.abs(Math.sin(time*1.3))*hr*.08,0,0,Math.PI*2); c.stroke();
+    c.fillStyle="rgba(120,190,255,.85)"; c.beginPath(); c.arc(hx+hr*.25,hy+hr*.62+Math.abs(Math.sin(time*1.3))*hr*.15,hr*.07,0,Math.PI*2); c.fill();
+    // Zzz
+    for(let i=0;i<3;i++){ const p=((time*.45+i/3)%1); c.save(); c.globalAlpha=1-p; c.fillStyle="#3a5a9a"; c.font=`bold ${Math.round(t*(.35+p*.45))}px "Jua",sans-serif`; c.textAlign="center";
+      c.fillText("Z",hx+hr*(.9+p*1.4),hy-hr*(1+p*2.2)); c.restore(); }
+  }
+  label(c,asleep?(peek?"보디가드 (눈 떴다!)":"보디가드 쿨쿨 💤"):"보디가드",hx,base+t*.32,Math.max(11,t*.28),asleep&&!peek?"#3a5a9a":"#2d3a4a");
+  c.restore();
+}
 function caughtByGuard(o,what){
   const id="j"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const rec={owner:visitId,ownerNick:o.nick,thief:docId,thiefNick:S.nick,what,at:Date.now(),status:"jailed",letters:[]};
@@ -2530,7 +2587,7 @@ function caughtByGuard(o,what){
   if(mode==="db") db.doc("jails/"+id).set(rec).catch(()=>{});
   siren(); sayBubble(docId,"으악! 잡혔다 😱"); logAct(`${o.nick}님 마을에서 보디가드에게 잡힘 (${what})`);
   walkTo(W.map,[[JAIL.x,JAIL.y+.2]]); cam.follow=true;
-  jailChoice(`<div class="guide"><div class="gic siren">🔒</div><h2>${esc(o.nick)}님 보디가드가 지키고 있었어요</h2><p>감옥에 갇혔어요. 어떻게 할까요?</p></div>`,"🕴️ 보디가드에게 잡혔어요!");
+  jailChoice(`<div class="guide"><div class="gic siren">🔒</div><h2>${guardAsleep(o)?`앗! 졸던 보디가드가 눈을 떴어요! 들켰다 😱`:`${esc(o.nick)}님 보디가드가 지키고 있었어요`}</h2><p>감옥에 갇혔어요. 어떻게 할까요?</p></div>`,"🕴️ 보디가드에게 잡혔어요!");
 }
 // 감옥에서 고르기: 보석금 / 감옥 받아들이고 운동하기 / 반성문 쓰기
 function jailChoice(head,title){
@@ -2636,7 +2693,7 @@ function jailTap(fx,fy){
 }
 function drawGuardJail(items,c,t,time,o){
   const pid=visitId||docId;
-  if(guardOn(o)) items.push({y:DOOR.y+.6,d:()=>{ const x=(DOOR.x-.9)*t, y=(DOOR.y+.6)*t; emo(c,"🕴️",x,y,t*.85); label(c,"보디가드",x,y-t*.95,Math.max(10,t*.26),"#2d3a4a"); }});
+  if(guardOn(o)) items.push({y:DOOR.y+1.1,d:()=>drawGuard(c,t,time,o)});
   const inJail=jails.filter(j=>j.owner===pid&&j.status==="jailed");
   if(inJail.length) items.push({y:JAIL.y+.3,d:()=>{ const x=JAIL.x*t, y=JAIL.y*t, w=t*1.5, h=t*1.7;
     c.fillStyle="rgba(40,40,50,.18)"; c.fillRect(x-w/2,y-h+t*.3,w,h);
@@ -3442,6 +3499,7 @@ setInterval(()=>{
   if(!S) return;
   settleLure();
   if(!rpsActive) giantCheck();
+  guardTick();
   if(isMoving(W[where])) markActive();
   if(!resting&&!buffOn()&&Date.now()-lastActiveAt<10000&&energy()>0){ setEnergy(energy()-100/600); if(++sleepTick%15===0) save(); }
   if(jailed()&&tab==="village"&&(visitId!==myJail().owner||where!=="map"||Math.hypot(W.map.x-JAIL.x,W.map.y-JAIL.y-.2)>.9)&&!isMoving(W.map)) enforceJail();
