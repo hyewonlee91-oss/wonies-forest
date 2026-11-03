@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://hyewonlee91-oss.github.io/wonies-forest/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="가족·친구와 함께 농사짓고, 동물 키우고, 집을 꾸며요.">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
@@ -159,7 +159,7 @@ input,select{font:inherit;color:var(--ink);background:#fff;border:2px solid var(
 
 /* 게임 */
 #game{height:var(--appH,100%);display:flex;flex-direction:column;max-width:560px;margin:0 auto;background:var(--paper)}
-.top{display:flex;align-items:center;gap:8px;padding-block:8px;
+.top{display:flex;align-items:center;gap:8px;padding-block:8px;padding-top:max(8px,env(safe-area-inset-top,0px));
   padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));
   background:var(--paper);border-bottom:2px solid var(--line)}
 .top .me{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
@@ -284,6 +284,31 @@ main.fullgame{padding:0!important;gap:0!important;overflow:hidden!important;posi
 .ov-top>*{pointer-events:auto}
 .titlechip{background:rgba(255,250,240,.9);border:2px solid var(--line);border-radius:14px;padding:5px 10px;font-family:var(--display);font-size:15px;max-width:62%;overflow-wrap:anywhere}
 .titlechip small{display:flex;flex-wrap:wrap;gap:0 8px;font-family:var(--body);font-size:12px;color:var(--muted);line-height:1.35}
+#giantBanner{position:fixed;left:50%;top:calc(90px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;padding:14px 22px;border-radius:18px;font:400 18px/1.35 var(--display);text-align:center;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}
+#giantBanner b{font-size:22px;font-weight:400}
+#giantBanner.alarm{background:#d6283c;animation:gbFlash .35s steps(2) 8}
+#giantBanner.win{background:linear-gradient(135deg,#ffb703,#fb5607);animation:gbPop .4s ease-out}
+@keyframes gbFlash{50%{background:#7a0f1c}}
+@keyframes gbPop{0%{transform:translateX(-50%) scale(.6)}70%{transform:translateX(-50%) scale(1.08)}100%{transform:translateX(-50%) scale(1)}}
+#giantHud{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:55;width:min(92vw,420px);background:rgba(255,253,247,.96);border:3px solid #d6283c;border-radius:18px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+#giantHud .gh-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px}
+#giantHud .gh-bar{height:14px;border-radius:8px;background:#f1e3d3;overflow:hidden;margin-bottom:8px}
+#giantHud #ghFill{height:100%;width:0;background:linear-gradient(90deg,#ffb703,#d6283c);transition:width .1s}
+#giantHud #ghTap{width:100%;border:0;border-radius:14px;padding:14px;font:400 22px var(--display);color:#fff;background:#d6283c;box-shadow:0 5px 0 #8f1726;touch-action:manipulation}
+#giantHud #ghTap:active{transform:translateY(3px);box-shadow:0 2px 0 #8f1726}
+.rps-vs{display:flex;align-items:center;justify-content:space-around;gap:8px;margin-bottom:8px}
+.rps-p{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.rps-p b{font-family:var(--display);font-weight:400;font-size:15px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rps-ch{width:64px;height:64px}.rps-ch img,.rps-ch svg{width:100%;height:100%}
+.rps-sc{font-size:16px;min-height:20px}
+.rps-mid{font:400 26px var(--display);color:#d6283c}
+.rps-last{display:flex;align-items:center;justify-content:center;gap:14px;font-size:40px;background:#fff7e0;border-radius:14px;padding:6px}
+.rps-last small{font-size:14px;color:var(--muted)}
+.rps-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rps-b{border:3px solid var(--line);background:#fff;border-radius:16px;padding:10px 0;font-size:40px;display:flex;flex-direction:column;align-items:center;touch-action:manipulation}
+.rps-b small{font-size:13px;color:var(--muted)}
+.rps-b[aria-pressed="true"]{border-color:var(--berry);background:#fff0f2}
+.rps-b:disabled{opacity:.55}
 .ov-btns{margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:58%}
 .ovbtn{background:rgba(255,255,255,.92);border:2px solid var(--line);border-radius:12px;padding:6px 9px;font-size:13px;white-space:nowrap;line-height:1.2}
 .mapwrap.full .zoombtns{bottom:auto;top:50%;transform:translateY(-50%)}
@@ -398,7 +423,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <script>
 // 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
 (function(){
-  var V="11.03-1";
+  var V="11.03-2";
   window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
   setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
     var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
@@ -463,7 +488,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.03-1</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.03-2</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -768,7 +793,11 @@ async function hashPin(nick,pin){
 }
 // 업데이트 소식: 새 소식을 넣을 때 NEWS에 날짜(id)와 내용을 적어요.
 // 사람마다 한 번만 떠요(다음 접속부터는 안 뜸). 비어 있으면 아무것도 안 떠요.
-const NEWS={id:"2026-11-02a", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
+const NEWS={id:"2026-11-03a", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
+  {h:"🚨 마을에 거인이 나타나요!", d:"가끔 마을에 거인이 쿵쿵 걸어와요. 나타나면 '간지럽히기' 버튼을 마구 눌러서 막아요! 막으면 하늘에서 선물 상자가 쏟아지고, 못 막으면 밭 한 칸이 밟혀요."},
+  {h:"✊ 가위바위보 내기", d:"이웃 탭에서 접속 중인 친구에게 가위바위보 삼세판을 신청할 수 있어요. 수락하면 쉬기 장소에서 만나 승부! 진 사람은 가진 것 중 가장 비싼 것(집·탈것·동물 전부·가장 비싼 물건 전부)을 이긴 사람에게 줘요."},
+  {h:"🧺 동물 것도 한 번에", d:"동물 하나만 눌러도 준비된 동물들의 달걀·우유·양털·동전을 한 번에 거둬요."},
+  {h:"🐾 동물 우리 넓히기", d:"시장 › 사기에서 동물 우리를 넓히면 2마리씩 더 키울 수 있어요."},
   {h:"🏠 집을 넓히면 좋은 점이 생겼어요", d:"층 올리기나 옆으로 넓히기를 한 번 할 때마다 동물을 2마리 더 키울 수 있고, 매일 처음 들어올 때 집세 🪙30씩을 더 받아요."},
   {h:"⚡ 기운이 천천히 닳아요", d:"기운은 움직이고 활동하는 동안 조금씩 닳아서, 계속 놀면 10분쯤에 다 써요. 수확·심기·만들기는 따로 기운이 들지 않고, 친구 것을 몰래 가져가면 3이 더 들어요."},
   {h:"🛒 원하는 만큼 사기", d:"시장 › 사기에서 ✏️를 누르면 원하는 개수만큼 살 수 있어요. 나무·흙·시멘트는 100개씩 한 번에 살 수 있어요."},
@@ -1012,6 +1041,13 @@ const GUIDE=[
     {h:"🕴️ 보디가드", d:"시장 › 사기에서 일주일에 🪙1000으로 고용하면 우리 집을 지켜줘요. 🔔 알림에서 반성문을 읽고 풀어줄 수 있어요."},
     {h:"🪧 나갈 때 팻말", d:"☰ 메뉴 › 나가기나 뒤로가기를 누르면 팻말을 골라 집 옆에 걸어둘 수 있어요. 주인이 없는 집엔 💤 자리비움이 떠요."},
     {h:"☰ 메뉴", d:"🔔 알림, 📮 문제 신고, 소리 끄기, 나가기가 들어 있어요."}
+  ]},
+  {ic:"✨",title:"새로 생긴 재미",text:"요즘 추가된 기능이에요.",list:[
+    {h:"🚨 거인 출몰", d:"가끔 마을에 거인이 나타나요. '간지럽히기'를 마구 눌러서 막으면 선물 상자가 쏟아져요. 상자를 눌러 열면 동전·케이크·재료, 운이 좋으면 💎 잭팟!"},
+    {h:"✊ 가위바위보 내기", d:"이웃 탭에서 접속 중인 친구에게 신청해요. 수락하면 쉬기 장소에서 만나 삼세판! 진 사람은 가진 것 중 가장 비싼 것(집·탈것·동물 전부·가장 비싼 물건 전부)을 줘요."},
+    {h:"🧺 한 번에 거두기", d:"다 익은 작물이 10개 이상이면 10개씩, 동물은 하나만 눌러도 준비된 동물들 것을 한 번에 거둬요."},
+    {h:"🐾 우리·집 넓히기", d:"시장 › 사기에서 동물 우리를 넓히거나 집을 증축하면 동물을 2마리씩 더 키워요. 집을 넓히면 매일 집세도 받아요."},
+    {h:"💰 감옥", d:"보디가드에게 잡히면 보석금 🪙3000을 내거나, 반성문을 쓰거나, 감옥을 받아들이고 운동해요."}
   ]}
 ];
 function showGuide(i=0){
@@ -1063,7 +1099,8 @@ function josa(word,a,b){ const ch=(word||"").slice(-1).charCodeAt(0); if(ch<0xAC
 const MONTH=30*864e5;
 function isAway(p){ return !!p&&(p.away===true||(Date.now()-(p.updatedAt||p.createdAt||Date.now()))>MONTH); }
 const awayText=p=>`${p.nick}${josa(p.nick,"은","는")} 잠시 여행을 떠났어요. 🏝`;
-function startGame(){
+let gameStartAt=0;
+function startGame(){ gameStartAt=Date.now();
   chatSince=Date.now(); chatSeen=chatSince;
   migrate(); // 새로 만든 마을도 집 목록·기운 등 기본값을 갖추게
   S.away=false; S.sign=null; inboxShown=false; save(); setTimeout(rentDaily,1200); stray=null; strayCheckAt=0; needSnap=true; armLeave(); setTimeout(enforceJail,1500); // 들어오면 여행에서 돌아옴, 마지막 접속 시각도 갱신
@@ -1100,6 +1137,9 @@ function subscribe(){
     const nw=myNotes[0]; if(inboxShown&&nw&&before&&nw.at>before&&nw.kind==="argue") toast(`😤 ${nw.fromNick}님이 따지러 왔어요: ${nw.text}`); });
   on(db.collection("thefts").orderBy("at","desc").limit(200),s=>{ thefts=s.docs.map(d=>({id:d.id,...d.data()})); processThefts(); animsKey=""; });
   on(db.collection("jails").orderBy("at","desc").limit(100),s=>{ jails=s.docs.map(d=>({id:d.id,...d.data()})); onJails(); });
+  let rIn=[], rOut=[]; const mergeR=()=>{ rpsDocs=[...rIn,...rOut]; onRps(); };
+  on(db.collection("rps").where("to","==",docId).limit(50),s=>{ rIn=s.docs.map(d=>({id:d.id,...d.data()})); mergeR(); });
+  on(db.collection("rps").where("from","==",docId).limit(50),s=>{ rOut=s.docs.map(d=>({id:d.id,...d.data()})); mergeR(); });
   on(db.collection("dms").where("to","==",docId).limit(300),s=>{ dmIn=s.docs.map(d=>({id:d.id,...d.data()})); onDmSnapshot(); });
   on(db.collection("dms").where("from","==",docId).limit(300),s=>{ dmOut=s.docs.map(d=>({id:d.id,...d.data()})); onDmSnapshot(); });
   let gIn=[], gOut=[]; const mergeG=()=>{ gifts=[...gIn,...gOut]; processGifts(); };
@@ -1491,6 +1531,7 @@ function renderAct(){
 // ---------- 마을 지도 ----------
 function tapMap(fx,fy){
   const x=Math.floor(fx), y=Math.floor(fy), o=owner(), visiting=!!visitId;
+  if(!visiting&&giantTap(fx,fy)) return;
   if(jailTap(fx,fy)) return;
   if(jailBlock()) return;
   if(toaTap(fx,fy)) return;
@@ -1500,8 +1541,8 @@ function tapMap(fx,fy){
   // 길강아지·길고양이
   if(stray&&!visiting&&Math.hypot(stray.x-fx,stray.y-fy)<.95){ walkTo(W.map,[[stray.x+(stray.x<W.map.x?.9:-.9),stray.y+.1]]); strayTap(); return; }
   // 동물
-  for(let i=0;i<anims.length;i++){ const a=anims[i]; if(Math.hypot(a.x-fx,a.y-fy)<.6){
-    walkTo(W.map,[[Math.min(Math.max(fx,0.5),PEN.x-.4),fy]]); if(!visiting) animalTap(i); else { voice(a.type); lureSheet(a.type); } a.say=1.6; return; } }
+  { let bi=-1, bd=.9; anims.forEach((a,i)=>{ const d=Math.hypot(a.x-fx,a.y-.25-fy); if(d<bd){ bd=d; bi=i; } });
+    if(bi>=0){ const a=anims[bi]; walkTo(W.map,[[Math.min(Math.max(fx,0.5),PEN.x-.4),fy]]); if(!visiting) animalTap(a.i); else { voice(a.type); lureSheet(a.type); } a.say=1.6; return; } }
   const kind=tileKind(x,y);
   if(housePlace&&!visiting){ housePlace.x=Math.floor(fx)-1; housePlace.y=Math.floor(fy)-1; SFX.tap(); renderAct(); return; }
   // 누른 칸에 작물이 있으면 작물이 먼저 (집 창이 뜨지 않게)
@@ -1547,14 +1588,18 @@ function harvestMany(x,y){
   sel=null; SFX.harvest(); logAct(`${list.length}칸 한 번에 수확 (${txt})`); save();
   toast(`🧺 ${list.length}칸 한 번에 수확! ${txt}${buffOn()?" 🍰 두 배!":""}${hay?` · 지푸라기 ${hay}개`:""}`); refreshVillage();
 }
+// 동물을 하나 누르면 준비된 동물 것을 한 번에 다 거둬요
 function animalTap(i){
   const a=S.animals[i]; if(!a) return; const A=ANIMALS[a.type];
   voice(a.type);
-  if(animalReady(a)){ useEnergy("animal");
-    if(A.product==="coin"){ const n=5+Math.floor(Math.random()*11); S.coins+=n; SFX.coin(); toast(`${A.name}가 동전 ${n}개를 물어왔어요`); }
-    else { addInv(A.product,1); SFX.harvest(); toast(`${ITEMS[A.product].name} 1개를 얻었어요`); }
-    a.at=Date.now(); save(); refreshVillage();
-  }
+  const ready=S.animals.filter(animalReady);
+  if(!ready.length){ const left=A.every-(Date.now()-a.at)/1000; toast(`${A.ic} ${A.name}: ${fmt(Math.max(1,left))} 뒤에 ${A.product==="coin"?"동전을 물어와요":ITEMS[A.product].name+"을(를) 줘요"}`); return; }
+  useEnergy("animal"); const got={}; let coins=0;
+  ready.forEach(x=>{ const B=ANIMALS[x.type]; if(B.product==="coin"){ coins+=5+Math.floor(Math.random()*11); } else { addInv(B.product,1); got[B.product]=(got[B.product]||0)+1; } x.at=Date.now(); });
+  S.coins+=coins; const parts=Object.entries(got).map(([k,n])=>`${ITEMS[k].ic} ${ITEMS[k].name} ${n}개`); if(coins) parts.push(`🪙${coins}`);
+  if(coins) SFX.coin(); SFX.harvest(); anims.forEach(x=>{ x.say=1.4; puff(x.x,x.y-.3,"#ffd84d"); });
+  toast(`🧺 동물 ${ready.length}마리 것을 한 번에 거뒀어요! ${parts.join(", ")}`); logAct(`동물 ${ready.length}마리 거두기`);
+  save(); refreshVillage();
 }
 function animalReady(a){ return (Date.now()-a.at)/1000>=ANIMALS[a.type].every; }
 function plotState(p){ const el=(Date.now()-p.at)/1000, pr=Math.min(1,el/p.dur); return {stage:pr>=1?"ready":"grow",pr,left:p.dur-el}; }
@@ -1663,6 +1708,7 @@ function drawMap(c,t,time,dt){
   stepKids(dt); drawKids(items,c,t,time);
   stepToa(dt,time); drawToa(items,c,t,time);
   stepPipi(dt,time); drawPipi(items,c,t,time);
+  if(!visitId){ stepGiant(dt); drawGiant(items,c,t,time); }
   const m=W.map; items.push({y:m.y,d:()=>drawChar(c,S.char,m.x*t,m.y*t,t,{walking:isMoving(m),time,name:S.nick,mine:true,id:docId,ride:S.ride})});
   items.sort((a,b)=>a.y-b.y).forEach(i=>i.d());
   // 하늘을 나는 새
@@ -2188,7 +2234,7 @@ function loop(now){
       if(!isMoving(me)) cam.follow=false; }
     const tz=t*cam.zoom; camOX=cam.x*tz;
     c.fillStyle="#5f9e3a"; c.fillRect(0,0,G.w,G.h);
-    c.save(); c.translate(-cam.x*tz,-cam.y*tz); drawMap(c,tz,time,dt); const t0=t; drawSparklesZ(tz); c.restore();
+    const shx=shake>0?(Math.random()-.5)*shake*16:0, shy=shake>0?(Math.random()-.5)*shake*16:0; c.save(); c.translate(-cam.x*tz+shx,-cam.y*tz+shy); drawMap(c,tz,time,dt); const t0=t; drawSparklesZ(tz); c.restore();
   } else { camOX=-G.ox; c.fillStyle=where==="room"?"#6e4b31":"#8fc463"; c.fillRect(0,0,G.w,G.h);
     c.save(); c.translate(G.ox,G.oy); if(where==="room") drawRoom(c,t,time); else drawWorld(c,t,time); drawSparkles(); c.restore(); }
   raf=requestAnimationFrame(loop);
@@ -2301,7 +2347,8 @@ function confirmHousePlace(){
   housePlace=null; logAct(`새 ${MATS[p.mat]} 짓기`); save(); SFX.build(); puff(p.x+1.5,p.y+1,"#ffd84d"); renderAct(); toast(`${S.houses.length}번째 집으로 ${MATS[p.mat]}을 지었어요!`); }
 // 🏠 증축 보너스: 층 하나·넓히기 한 칸마다 동물 +2마리, 매일 집세 🪙30
 function growLevels(o=S){ return (o.houses||[]).filter(h=>h.mat).reduce((a,h)=>a+Math.max(0,(h.level||1)-1)+(h.wing||0),0); }
-function maxAnimals(){ return MAX_ANIMALS+2*growLevels(); }
+function maxAnimals(){ return MAX_ANIMALS+2*growLevels()+2*(S.penExtra||0); }
+const penCost=n=>300+200*n;
 const RENT_PER=30;
 function rentDaily(){
   const today=new Date().toLocaleDateString("ko-KR"); if(!S||S.rentDate===today) return;
@@ -2601,6 +2648,247 @@ function drawGuardJail(items,c,t,time,o){
   if(S.luring&&where==="map"){ const m=W.map; items.push({y:m.y-.05,d:()=>{ const bob=Math.abs(Math.sin(time*7))*t*.06; emo(c,ANIMALS[S.luring.type].ic,(m.x-.75)*t,m.y*t-bob,t*.62); }}); }
 }
 
+// =====================================================================
+// 🚨 거인 출몰! (사람마다 따로: 처음 들어오면 바로, 그다음엔 3일에 한 번)
+// =====================================================================
+const GIANT_IMG=new Image(); GIANT_IMG.src="data:image/png;base64,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";
+const GIANT_EVERY=3*86400000, GIANT_TAPS=25, GIANT_SECS=15;
+let giant=null, giantGifts=[], shake=0, giantFloat=[];
+function giantCheck(){
+  if(!S||giant||giantGifts.length||visitId||where!=="map"||tab!=="village"||!$("sheetwrap").hidden||jailed()||housePlace) return;
+  if(Date.now()<(S.giantNext||0)) return;
+  if(Date.now()-gameStartAt<5000) return;
+  startGiant();
+}
+function giantBanner(html,cls){
+  let b=$("giantBanner"); if(!b){ b=document.createElement("div"); b.id="giantBanner"; document.body.appendChild(b); }
+  b.className=cls||""; b.innerHTML=html; b.hidden=false; clearTimeout(b._t); b._t=setTimeout(()=>{ b.hidden=true; },3200);
+}
+function startGiant(){
+  S.giantNext=Date.now()+GIANT_EVERY; S.giantCount=(S.giantCount||0)+1; save();
+  const me=W.map, side=Math.random()<.5?-1:1;
+  giant={phase:"enter",x:Math.max(2,Math.min(MC-2,me.x+side*6)),y:Math.max(4,me.y-8),tx:Math.max(1.5,Math.min(MC-1.5,me.x+side*1.9)),ty:Math.max(4.2,me.y+.2),t:0,step:0,taps:0,wob:0,jump:0,say:"",sayT:0};
+  sel=null; renderAct(); siren(); shake=1.2; logAct("거인 출몰!");
+  giantBanner(`🚨 긴급 비상! 🚨<br><b>마을에 거인이 나타났어요!</b>`,"alarm");
+  camGoal={x:giant.x,y:giant.y-1.5,z:Math.min(1,cam.zoom)};
+  setTimeout(()=>{ if(giant) camGoal={x:giant.tx,y:giant.ty-1.6,z:Math.min(1,cam.zoom)}; },1600);
+}
+function giantHud(){
+  let h=$("giantHud");
+  if(!giant||giant.phase!=="game"){ if(h) h.remove(); return; }
+  if(!h){ h=document.createElement("div"); h.id="giantHud"; document.body.appendChild(h);
+    h.innerHTML=`<div class="gh-top"><b>🤣 거인을 간지럽혀서 막아요!</b><span id="ghTime"></span></div><div class="gh-bar"><div id="ghFill"></div></div><button id="ghTap" type="button">👆 간지럽히기! <span id="ghCnt"></span></button>`;
+    const btn=h.querySelector("#ghTap"); btn.addEventListener("pointerdown",e=>{ e.preventDefault(); tickleGiant(); }); }
+  const left=Math.max(0,(giant.until-Date.now())/1000);
+  h.querySelector("#ghTime").textContent=`⏱ ${left.toFixed(1)}초`;
+  h.querySelector("#ghFill").style.width=Math.min(100,giant.taps/GIANT_TAPS*100)+"%";
+  h.querySelector("#ghCnt").textContent=`${giant.taps}/${GIANT_TAPS}`;
+}
+function tickleGiant(){
+  if(!giant||giant.phase!=="game") return;
+  audio(); giant.taps++; giant.wob=1; shake=Math.max(shake,.25);
+  tone(320+giant.taps*28,.07,{vol:.06,type:"triangle"});
+  giantFloat.push({x:giant.x+(Math.random()-.5)*1.6,y:giant.y-2.4-Math.random()*1.4,txt:["ㅋ","ㅋㅋ","히히","간질","ㅋㅋㅋ"][Math.floor(Math.random()*5)],life:1});
+  if(giant.taps%5===0){ giant.say=["으하하 간지러워!","그만 그만~","히히히히","크크크크!","살려줘 ㅋㅋㅋ"][Math.floor(Math.random()*5)]; giant.sayT=1.2; }
+  if(giant.taps>=GIANT_TAPS) giantWin(); else giantHud();
+}
+function giantWin(){
+  giant.phase="happy"; giant.t=0; giant.say="고마워! 선물 받아~!"; giant.sayT=3; giantHud();
+  [523,659,784,1047,1319].forEach((f,i)=>tone(f,.22,{at:i*.11,vol:.08,type:"triangle"})); shake=.8;
+  giantBanner(`🎉 거인을 막았어요! 🎉<br><b>하늘에서 선물이 쏟아져요!</b>`,"win"); logAct("거인 막기 성공");
+  const me=W.map, n=8+Math.floor(Math.random()*4);
+  setTimeout(()=>{ for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, r=1.1+Math.random()*2.6;
+    giantGifts.push({x:Math.max(.8,Math.min(MC-.8,me.x+Math.cos(a)*r)),y:Math.max(3.5,Math.min(MR-1,me.y+Math.sin(a)*r*.8)),drop:2.4+Math.random()*1.5,vy:0,born:Date.now(),id:Math.random()}); }
+    toast("🎁 선물 상자를 눌러서 열어요!"); },700);
+  setTimeout(()=>{ if(giant) { giant.phase="leave"; giant.t=0; } },3600);
+}
+function giantLose(){
+  giant.phase="stomp"; giant.t=0;
+  const ks=Object.keys(S.field||{}); let k=null;
+  if(ks.length){ k=ks.sort((a,b)=>{ const [ax,ay]=a.split(",").map(Number), [bx,by]=b.split(",").map(Number); return Math.hypot(ax-giant.x,ay-giant.y)-Math.hypot(bx-giant.x,by-giant.y); })[0]; }
+  giant.stompKey=k;
+  if(k){ const [x,y]=k.split(",").map(Number); giant.tx=x+.5; giant.ty=y+.9; } else { giant.tx=giant.x; giant.ty=giant.y; }
+  giant.say="흥! 재미없어~"; giant.sayT=1.6; giantHud();
+}
+const GIFT_TABLE=[
+  {p:46,f:()=>{ const n=30+Math.floor(Math.random()*121); S.coins+=n; return {t:`+🪙${n}`}; }},
+  {p:20,f:()=>{ const n=200+Math.floor(Math.random()*301); S.coins+=n; return {t:`+🪙${n}!`,big:1}; }},
+  {p:12,f:()=>{ addInv("cake",1); return {t:"🍰 딸기케이크!",big:1}; }},
+  {p:10,f:()=>{ const m=["wood","cement","clay"][Math.floor(Math.random()*3)]; addInv(m,20); return {t:`${ITEMS[m].ic} ${ITEMS[m].name} 20개`}; }},
+  {p:8,f:()=>{ addInv("cheese",2); return {t:"🧀 치즈 2개"}; }},
+  {p:4,f:()=>{ S.coins+=2000; return {t:"💎 잭팟 🪙2000!!",jack:1}; }}
+];
+function openGift(g){
+  giantGifts=giantGifts.filter(x=>x!==g); audio();
+  let r=Math.random()*100, res=null; for(const e of GIFT_TABLE){ if((r-=e.p)<0){ res=e.f(); break; } } if(!res) res=GIFT_TABLE[0].f();
+  giantFloat.push({x:g.x,y:g.y-.6,txt:res.t,life:1.6,big:res.big||res.jack});
+  puff(g.x,g.y-.3,res.jack?"#7fd8ff":"#ffd84d"); puff(g.x,g.y-.3,"#ff7fa0");
+  if(res.jack){ [784,988,1175,1568,1976].forEach((f,i)=>tone(f,.3,{at:i*.09,vol:.09,type:"square"})); shake=1; giantBanner(`💎 잭팟!! 💎<br><b>🪙2000을 얻었어요!</b>`,"win"); }
+  else { SFX.coin(); tone(res.big?1046:880,.12,{at:.05,vol:.06,type:"triangle"}); }
+  renderTop(); save(); logAct(`거인 선물: ${res.t}`);
+  if(!giantGifts.length) setTimeout(()=>toast("선물을 다 열었어요! 3일 뒤에 또 올지도…?"),600);
+}
+function giantTap(fx,fy){
+  for(const g of giantGifts){ if(g.drop<=0&&Math.hypot(g.x-fx,g.y-.3-fy)<.75){ openGift(g); return true; } }
+  if(giant&&giant.phase==="game"&&Math.abs(fx-giant.x)<1.3&&fy>giant.y-4.2&&fy<giant.y+.3){ tickleGiant(); return true; }
+  return !!(giant&&giant.phase==="game");
+}
+function stepGiant(dt){
+  shake=Math.max(0,shake-dt*2.2);
+  giantFloat=giantFloat.filter(f=>(f.life-=dt*.8)>0); giantFloat.forEach(f=>f.y-=dt*.9);
+  giantGifts.forEach(g=>{ if(g.drop>0){ g.vy+=dt*14; g.drop-=g.vy*dt; if(g.drop<=0){ g.drop=0; tone(500,.05,{vol:.04}); } } });
+  if(giantGifts.length&&Date.now()-giantGifts[0].born>30000){ const rest=[...giantGifts]; rest.forEach(openGift); }
+  const g=giant; if(!g) return; g.t+=dt; g.wob=Math.max(0,g.wob-dt*4); g.sayT=Math.max(0,g.sayT-dt);
+  const walk=(sp)=>{ const dx=g.tx-g.x, dy=g.ty-g.y, d=Math.hypot(dx,dy); if(d<.05) return true; const s=Math.min(d,dt*sp); g.x+=dx/d*s; g.y+=dy/d*s;
+    g.step+=dt*sp; if(g.step>.75){ g.step=0; shake=Math.max(shake,.7); tone(60,.18,{vol:.12,type:"sine"}); tone(90,.1,{vol:.06,type:"triangle"}); } return false; };
+  if(g.phase==="enter"){ if(walk(1.5)){ g.phase="game"; g.until=Date.now()+GIANT_SECS*1000; g.say="크하하! 밭을 다 밟아버릴 테다!"; g.sayT=2.2; tone(110,.5,{vol:.1,type:"sawtooth"}); giantHud(); toast("👆 거인을 마구 눌러서 간지럽혀요!"); } }
+  else if(g.phase==="game"){ giantHud(); if(Date.now()>g.until) giantLose(); }
+  else if(g.phase==="happy"){ g.jump=Math.abs(Math.sin(g.t*7))*.5; }
+  else if(g.phase==="stomp"){ if(walk(3.5)){ if(g.stompKey!==undefined){ const k=g.stompKey; g.stompKey=undefined;
+        if(k&&S.field[k]){ const [x,y]=k.split(",").map(Number); delete S.field[k]; puff(x+.5,y+.5,"#8a5a3b"); puff(x+.5,y+.5,"#6b4426"); save();
+          toast("쿵!! 거인이 밭 한 칸을 밟았어요 😭 다음엔 꼭 막아요!"); logAct("거인이 밭을 밟음"); }
+        else toast("거인이 심심하다며 돌아갔어요");
+        shake=1.6; tone(45,.45,{vol:.16,type:"sine"}); g.say="쿵!! 크하하"; g.sayT=1.4; setTimeout(()=>{ if(giant){ giant.phase="leave"; giant.t=0; } },1300); } } }
+  else if(g.phase==="leave"){ g.ty=-3; g.tx=g.x; if(walk(2.4)||g.y<1) giant=null; }
+}
+function drawGiant(items,c,t,time){
+  giantGifts.forEach(g=>items.push({y:g.y,d:()=>{ const bob=g.drop>0?0:Math.abs(Math.sin(time*4+g.id*9))*t*.08;
+    if(g.drop<=0){ c.fillStyle="rgba(0,0,0,.18)"; c.beginPath(); c.ellipse(g.x*t,g.y*t,t*.3,t*.09,0,0,Math.PI*2); c.fill(); }
+    emo(c,"🎁",g.x*t,(g.y-.35-g.drop)*t-bob,t*.75); if(g.drop<=0){ const tw=.5+.5*Math.sin(time*6+g.id*7); emo(c,"✨",g.x*t+t*.32,(g.y-.75)*t,t*.28*tw+1); } }}));
+  const g=giant; if(g){ items.push({y:g.y,d:()=>{ const im=GIANT_IMG; if(!im.complete||!im.naturalWidth) return;
+    const h=t*4.4, w=h*im.naturalWidth/im.naturalHeight, jump=(g.jump||0)*t, wob=Math.sin(time*40)*g.wob*.12, sway=g.phase==="enter"||g.phase==="leave"||g.phase==="stomp"?Math.sin(time*6)*.05:Math.sin(time*2)*.02;
+    const alpha=g.phase==="leave"?Math.max(0,Math.min(1,(g.y+2)/4)):1;
+    c.save(); c.globalAlpha=alpha; c.fillStyle="rgba(0,0,0,.2)"; c.beginPath(); c.ellipse(g.x*t,g.y*t,w*.36,t*.22,0,0,Math.PI*2); c.fill();
+    c.translate(g.x*t,g.y*t-jump); c.rotate(wob+sway); c.drawImage(im,-w/2,-h,w,h); c.restore();
+    const top=g.y*t-h-jump-6; if(g.sayT>0) drawBubble(c,g.say,g.x*t,top,t);
+    else if(g.phase==="game") label(c,"👆 눌러서 간지럽혀요!",g.x*t,top,Math.max(12,t*.32),"#c2187a"); }}); }
+  if(giantFloat.length) items.push({y:999,d:()=>giantFloat.forEach(f=>{ c.save(); c.globalAlpha=Math.min(1,f.life); label(c,f.txt,f.x*t,f.y*t,Math.max(13,t*(f.big?.5:.36)),f.big?"#d6336c":"#7a4b1f"); c.restore(); })});
+}
+
+// =====================================================================
+// ✊ 가위바위보 삼세판 (둘 다 접속 중일 때) — 지면 가진 것 중 가장 비싼 걸 줘요
+// =====================================================================
+const RPS={rock:"✊",scissors:"✌️",paper:"🖐"}, RPS_NAME={rock:"바위",scissors:"가위",paper:"보"};
+const rpsBeats=(a,b)=>(a==="rock"&&b==="scissors")||(a==="scissors"&&b==="paper")||(a==="paper"&&b==="rock");
+let rpsDocs=[], rpsHandled=new Set(), rpsActive=null, rpsPaying=new Set();
+function rpsRole(d){ return d.from===docId?"a":"b"; }
+function rpsState(d){ let a=0,b=0,round=1; const log=[];
+  for(let n=1;n<=15;n++){ const ma=d["a"+n], mb=d["b"+n]; if(!ma||!mb){ round=n; break; }
+    const r=ma===mb?0:rpsBeats(ma,mb)?1:-1; if(r>0) a++; else if(r<0) b++; log.push({n,ma,mb,r}); round=n+1; if(a>=2||b>=2) break; }
+  return {a,b,round,log,over:a>=2||b>=2||!!d.forfeit,winRole:d.forfeit?(d.forfeit==="a"?"b":"a"):a>=2?"a":b>=2?"b":null}; }
+function rpsChallenge(pid,nick){
+  if(mode!=="db") return; if(!onlineIds.has(pid)){ toast("친구가 접속 중일 때만 신청할 수 있어요"); return; }
+  if(rpsActive||rpsDocs.some(d=>d.status==="pending"&&d.from===docId&&Date.now()-d.at<60000)){ toast("이미 신청한 승부가 있어요"); return; }
+  openSheet("✊ 가위바위보 신청",`<div class="guide"><div class="gic">✊✌️🖐</div><h2>${esc(nick)}님에게 가위바위보 삼세판을 신청할까요?</h2>
+    <p>먼저 2번 이기는 사람이 승리! <b>진 사람은 가진 것 중 가장 비싼 것</b>(집·탈것·동물 전부·가장 비싼 물건 전부 중 하나)을 이긴 사람에게 줘요.</p></div>
+    <div class="row"><button class="btn sub grow" data-close>그만둘래요</button><button class="btn grow" id="rpsGo">신청하기</button></div>`,w=>{
+    w.querySelector("#rpsGo").onclick=async()=>{ closeSheet(); const id="r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      try{ await db.doc("rps/"+id).set({from:docId,fromNick:S.nick,to:pid,toNick:nick,status:"pending",at:Date.now()}); toast(`${nick}님에게 신청했어요. 수락하면 쉬기 장소에서 만나요!`); SFX.note(); logAct(`${nick}님에게 가위바위보 신청`); }
+      catch(e){ toast("신청하지 못했어요"); } }; });
+}
+function onRps(){
+  if(!S) return;
+  rpsDocs.forEach(d=>{
+    if(d.to===docId&&d.status==="pending"&&Date.now()-d.at<60000&&!rpsHandled.has(d.id)){ rpsHandled.add(d.id); rpsAsk(d); }
+    if(d.from===docId&&d.status==="declined"&&!rpsHandled.has("x"+d.id)){ rpsHandled.add("x"+d.id); if(Date.now()-d.at<120000) toast(`${d.toNick}님이 가위바위보를 거절했어요`); }
+    if((d.status==="accepted")&&(d.from===docId||d.to===docId)&&!rpsActive&&Date.now()-d.at<15*60000&&!rpsHandled.has("e"+d.id)){ rpsHandled.add("e"+d.id); rpsEnter(d.id); }
+    rpsSettle(d);
+  });
+  if(rpsActive){ const d=rpsDocs.find(x=>x.id===rpsActive); if(d) rpsRender(d); }
+}
+function rpsAsk(d){
+  siren(); SFX.note();
+  openSheet("✊ 가위바위보 승부 신청!",`<div class="guide"><div class="gic">✊✌️🖐</div><h2>${esc(d.fromNick)}님이 가위바위보 삼세판을 신청했어요!</h2>
+    <p>지면 가진 것 중 <b>가장 비싼 것</b>을 줘야 해요. 이기면 상대의 가장 비싼 걸 가져와요!</p></div>
+    <div class="row"><button class="btn sub grow" id="rpsNo">거절하기</button><button class="btn grow" id="rpsYes">수락! 붙어보자</button></div>`,w=>{
+    w.querySelector("#rpsNo").onclick=()=>{ closeSheet(); db.doc("rps/"+d.id).update({status:"declined"}).catch(()=>{}); };
+    w.querySelector("#rpsYes").onclick=()=>{ if(Date.now()-d.at>60000){ closeSheet(); toast("신청 시간이 지났어요"); return; } closeSheet(); db.doc("rps/"+d.id).update({status:"accepted",acceptedAt:Date.now()}).catch(()=>{}); }; });
+}
+function rpsEnter(id){
+  rpsActive=id; if(tab!=="rest") go("rest"); const d=rpsDocs.find(x=>x.id===id); if(!d) return;
+  const other=d.from===docId?d.toNick:d.fromNick; toast(`🌊 쉬기 장소에서 ${other}님과 만났어요! 승부 시작!`);
+  [392,523,659].forEach((f,i)=>tone(f,.15,{at:i*.12,vol:.07,type:"triangle"}));
+  openSheet("✊ 가위바위보 삼세판",`<div id="rpsBox"></div>`,null); rpsRender(d);
+}
+function rpsRender(d){
+  const box=$("rpsBox"); if(!box) return; const me=rpsRole(d), op=me==="a"?"b":"a", st=rpsState(d);
+  const myNick=S.nick, opNick=me==="a"?d.toNick:d.fromNick, opP=players.find(p=>idFor(p.nick)===(me==="a"?d.to:d.from));
+  const myScore=st[me], opScore=st[op], n=st.round, myMove=d[me+n], opMove=d[op+n], last=st.log[st.log.length-1];
+  const head=`<div class="rps-vs"><div class="rps-p"><div class="rps-ch">${charImg(S.char)}</div><b>${esc(myNick)}</b><span class="rps-sc">${"⭐".repeat(myScore)||"·"}</span></div>
+    <div class="rps-mid">VS</div><div class="rps-p"><div class="rps-ch">${charImg((opP&&opP.char)||{})}</div><b>${esc(opNick)}</b><span class="rps-sc">${"⭐".repeat(opScore)||"·"}</span></div></div>`;
+  const lastHtml=last?`<div class="rps-last"><span>${RPS[me==="a"?last.ma:last.mb]}</span><small>${last.r===0?"비김!":((last.r>0)===(me==="a"))?"이번 판 이겼어요!":"이번 판 졌어요…"}</small><span>${RPS[me==="a"?last.mb:last.ma]}</span></div>`:"";
+  let body;
+  if(st.over){
+    const win=st.winRole===me, pz=d.prize;
+    body=`<div class="guide"><div class="gic">${win?"🏆":"😭"}</div><h2>${win?"이겼어요!":"졌어요…"}${d.forfeit?(win?" (상대가 포기했어요)":" (포기했어요)"):""}</h2>
+      <p>${pz?(win?`${esc(opNick)}님의 <b>${esc(pz.label)}</b>을(를) 가져왔어요!`:`<b>${esc(pz.label)}</b>을(를) ${esc(opNick)}님에게 줬어요`):pz===null||d.prizeNone?(win?`${esc(opNick)}님은 줄 게 하나도 없었어요 😅`:"줄 게 없어서 아무것도 안 줬어요"):"정산하는 중…"}</p></div>
+      <button class="btn" id="rpsDone">닫기</button>`;
+  } else {
+    body=`${lastHtml}<p style="text-align:center;margin:6px 0">${n}번째 판 · ${myMove?(opMove?"":"상대를 기다리는 중… ⏳"):"무엇을 낼까요?"}</p>
+      <div class="rps-btns">${Object.keys(RPS).map(k=>`<button class="rps-b" data-rps="${k}" ${myMove?"disabled":""} aria-pressed="${myMove===k}">${RPS[k]}<small>${RPS_NAME[k]}</small></button>`).join("")}</div>
+      <button class="btn sub" id="rpsQuit" style="margin-top:8px">🏳 포기하기 (진 걸로 해요)</button>`;
+  }
+  box.innerHTML=head+body;
+  box.querySelectorAll("[data-rps]").forEach(b=>b.onclick=()=>{ const k=b.dataset.rps; audio(); tone(600,.06,{vol:.05});
+    d[me+n]=k; rpsRender(d); db.doc("rps/"+d.id).update({[me+n]:k}).catch(()=>{}); });
+  const q=box.querySelector("#rpsQuit"); if(q) q.onclick=()=>{ db.doc("rps/"+d.id).update({forfeit:me}).catch(()=>{}); d.forfeit=me; rpsRender(d); rpsSettle(d); };
+  const dn=box.querySelector("#rpsDone"); if(dn) dn.onclick=()=>{ closeSheet(); rpsActive=null; };
+  if(last&&!rpsHandled.has("s"+d.id+last.n)){ rpsHandled.add("s"+d.id+last.n); const iWon=(last.r>0)===(me==="a");
+    if(last.r===0) tone(440,.12,{vol:.06}); else if(iWon) [660,880].forEach((f,i)=>tone(f,.12,{at:i*.1,vol:.07,type:"triangle"})); else tone(220,.25,{vol:.06,type:"sawtooth"}); }
+  if(st.over&&!rpsHandled.has("o"+d.id)){ rpsHandled.add("o"+d.id); const win=st.winRole===me;
+    if(win){ [523,659,784,1047].forEach((f,i)=>tone(f,.2,{at:i*.12,vol:.08,type:"triangle"})); } else tone(160,.5,{vol:.07,type:"sawtooth"}); }
+}
+// 진 쪽이 자기 물건을 내놓고, 이긴 쪽이 받아요
+function houseValue(h){ let n=BUILD_COST; for(let lv=1;lv<(h.level||1);lv++) n+=upCost(lv); for(let w=0;w<(h.wing||0);w++) n+=wingCost(w); return buyPrice(h.mat)*n+(h.fence?FENCE_COST*4:0); }
+function bestStake(){
+  const c=[];
+  (S.vehicles||[]).forEach(v=>{ const V=VEHICLES[v]; if(V) c.push({kind:"vehicle",v,val:V.price,label:`${V.ic} ${V.name}`}); });
+  (S.houses||[]).forEach((h,i)=>{ if(h.mat) c.push({kind:"house",i,val:houseValue(h),label:`🏠 ${MATS[h.mat]} ${h.level||1}층${h.wing?` (+${h.wing}칸)`:""}`,h:{mat:h.mat,level:h.level||1,wing:h.wing||0,fence:!!h.fence}}); });
+  if((S.animals||[]).length){ const list=S.animals.map(a=>a.type); c.push({kind:"animals",list,val:list.reduce((s,t)=>s+(ANIMALS[t]?ANIMALS[t].cost:0),0),label:`🐾 동물 ${list.length}마리 전부`}); }
+  const ks=Object.keys(S.inv||{}).filter(k=>inv(k)>0&&ITEMS[k]&&ITEMS[k].sell&&!ITEMS[k].animal);
+  if(ks.length){ const k=ks.sort((a,b)=>ITEMS[b].sell-ITEMS[a].sell)[0]; c.push({kind:"item",k,n:inv(k),val:ITEMS[k].sell*inv(k),label:`${ITEMS[k].ic} ${ITEMS[k].name} ${inv(k)}개 전부`}); }
+  return c.sort((a,b)=>b.val-a.val)[0]||null;
+}
+function giveStake(p){
+  if(p.kind==="vehicle"){ S.vehicles=(S.vehicles||[]).filter(v=>v!==p.v); if(S.ride===p.v) S.ride=null; if(p.v==="car") parkedCar=null; }
+  else if(p.kind==="animals"){ S.animals=[]; animsKey=""; }
+  else if(p.kind==="item"){ S.inv[p.k]=0; }
+  else if(p.kind==="house"){ const i=p.i; S.furnStore=S.furnStore||{};
+    (S.room||[]).filter(f=>(f.h||0)===i).forEach(f=>{ S.furnStore[f.k]=(S.furnStore[f.k]||0)+1; });
+    S.room=(S.room||[]).filter(f=>(f.h||0)!==i).map(f=>((f.h||0)>i&&S.houses.length>1)?{...f,h:(f.h||0)-1}:f);
+    if(S.houses.length>1){ S.houses.splice(i,1); } else S.houses[0]={mat:null,level:0,lot:0};
+    S.house=S.houses[0]; if(where==="room"&&curHouse===i&&!visitId){ where="map"; } }
+}
+function takeStake(p){
+  if(p.kind==="vehicle"){ S.vehicles=S.vehicles||[]; if(S.vehicles.includes(p.v)){ S.coins+=p.val; return `이미 있어서 🪙${p.val}로 받았어요`; }
+    S.vehicles.push(p.v); if(VEHICLES[p.v].garage&&!S.garage){ const g=findGarageSpot(); if(g){ S.garage=g; return "차고도 같이 지어줬어요 🅿"; } } return ""; }
+  if(p.kind==="animals"){ let extra=0; p.list.forEach(t=>{ if(S.animals.length<maxAnimals()) S.animals.push({type:t,at:Date.now()}); else extra+=(ITEMS["a_"+t]||{sell:50}).sell; }); animsKey="";
+    if(extra){ S.coins+=extra; return `우리가 꽉 차서 남은 동물은 🪙${extra}에 팔았어요`; } return ""; }
+  if(p.kind==="item"){ addInv(p.k,p.n); return ""; }
+  if(p.kind==="house"){ const h=p.h;
+    if(!S.houses[0].mat){ S.houses[0]={...S.houses[0],...h,lot:S.houses[0].lot||0}; S.house=S.houses[0]; return "우리 큰집이 됐어요"; }
+    if(S.houses.length>=MAX_HOUSES){ S.coins+=p.val; return `집이 꽉 차서 🪙${p.val}로 받았어요`; }
+    const w=3+Math.min(2,h.wing||0);
+    for(let y=3;y<MR-4;y++) for(let x=1;x<MC-w-1;x++){ if(canPlaceHouse(x,y,-1,w)){ S.houses.push({...h,lot:S.houses.length,pos:{x,y}}); return "빈 땅에 옮겨 지었어요"; } }
+    S.coins+=p.val; return `지을 자리가 없어서 🪙${p.val}로 받았어요`; }
+  return "";
+}
+async function rpsSettle(d){
+  if(!S||(d.from!==docId&&d.to!==docId)) return; const st=rpsState(d); if(!st.over) return;
+  const me=rpsRole(d), win=st.winRole===me;
+  if(!win&&!d.paid&&!rpsPaying.has(d.id)){ rpsPaying.add(d.id);
+    const p=bestStake(); if(p) giveStake(p); save(); try{ await flush(); }catch(e){}
+    const opNick=me==="a"?d.toNick:d.fromNick;
+    logAct(`가위바위보 짐 → ${opNick}님에게 ${p?p.label:"없음"}`);
+    try{ await db.doc("rps/"+d.id).update({status:"done",paid:true,winner:me==="a"?d.to:d.from,prize:p||null,prizeNone:!p}); }catch(e){}
+    d.paid=true; d.prize=p||null; d.prizeNone=!p; render(); if(rpsActive===d.id) rpsRender(d); }
+  if(win&&d.paid&&!d.claimed&&!rpsPaying.has("c"+d.id)){ rpsPaying.add("c"+d.id);
+    let note=""; if(d.prize) note=takeStake(d.prize); save();
+    try{ await db.doc("rps/"+d.id).update({claimed:true}); }catch(e){}
+    const opNick=me==="a"?d.toNick:d.fromNick; logAct(`가위바위보 이김 ← ${opNick}님 ${d.prize?d.prize.label:"없음"}`);
+    if(d.prize){ toast(`🏆 ${d.prize.label}을(를) 가져왔어요! ${note}`); SFX.coin(); } renderTop(); render(); if(rpsActive===d.id) rpsRender(d); }
+}
+
 // ---------- 집들이 선물 (친구가 집에 있을 때만) ----------
 const GIFT_YES="고마워😀우리집에서 놀자", GIFT_NO="괜찮아😊마음만 받을게";
 let gifts=[], giftQueue=[], handledGifts=new Set();
@@ -2880,9 +3168,10 @@ function vMarket(v){
     L.querySelectorAll("[data-sa]").forEach(b=>b.onclick=()=>sell(b.dataset.sa,inv(b.dataset.sa)));
   } else if(marketMode==="buy"){
     const gLeft=(S.guardUntil||0)-Date.now();
-    L.innerHTML=`<div class="item"><span class="ic">🕴️</span><span class="grow"><span class="nm">보디가드 고용 (7일)</span><br><span class="sub">${gLeft>0?`지키는 중 · ${Math.ceil(gLeft/86400000)}일 남음`:"몰래 가져가려는 사람을 잡아 감옥에 가둬요"}</span></span><span class="price">🪙${GUARD_COST}</span><button class="btn sm" id="hireGuard">${gLeft>0?"연장":"고용"}</button></div>`+`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
+    L.innerHTML=`<div class="item"><span class="ic">🐾</span><span class="grow"><span class="nm">동물 우리 넓히기 (+2마리)</span><br><span class="sub">지금 ${maxAnimals()}마리까지 키울 수 있어요</span></span><span class="price">🪙${penCost(S.penExtra||0)}</span><button class="btn sm" id="morePen">넓히기</button></div><div class="item"><span class="ic">🕴️</span><span class="grow"><span class="nm">보디가드 고용 (7일)</span><br><span class="sub">${gLeft>0?`지키는 중 · ${Math.ceil(gLeft/86400000)}일 남음`:"몰래 가져가려는 사람을 잡아 감옥에 가둬요"}</span></span><span class="price">🪙${GUARD_COST}</span><button class="btn sm" id="hireGuard">${gLeft>0?"연장":"고용"}</button></div>`+`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
       <span class="price">🪙${buyPrice(k)}</span><button class="btn sm sub" data-b1="${k}">1개</button>${ITEMS[k].buy?`<button class="btn sm" data-b100="${k}">100개</button>`:""}<button class="btn sm sub" data-bn="${k}" aria-label="원하는 개수">✏️</button></div>`).join("");
     const buy=(k,n)=>{ if(!pay(buyPrice(k)*n)) return; logAct(`${ITEMS[k].name} ${n}개 사기`); addInv(k,n); save(); toast(`${ITEMS[k].name} ${n}개를 샀어요`); render(); };
+    L.querySelector("#morePen").onclick=()=>{ const c=penCost(S.penExtra||0); if(!pay(c)) return; S.penExtra=(S.penExtra||0)+1; logAct("동물 우리 넓히기"); save(); SFX.build(); toast(`🐾 우리가 넓어졌어요! 이제 ${maxAnimals()}마리까지 키워요`); render(); };
     L.querySelector("#hireGuard").onclick=()=>{ if(!pay(GUARD_COST)) return; S.guardUntil=Math.max(Date.now(),S.guardUntil||0)+7*86400000; logAct("보디가드 고용"); save(); SFX.build(); toast("🕴️ 보디가드가 일주일 동안 우리 마을을 지켜요"); render(); };
     L.querySelector("#moreField").onclick=()=>{ if(!pay(PLOT_COST)) return; S.fieldMax++; save(); toast(`이제 밭을 ${S.fieldMax}칸까지 쓸 수 있어요`); render(); };
     L.querySelectorAll("[data-b1]").forEach(b=>b.onclick=()=>buy(b.dataset.b1,1));
@@ -2899,7 +3188,7 @@ function vMarket(v){
         w.querySelector("#bnGo").onclick=()=>{ const n=Math.max(1,Math.min(9999,parseInt(num.value)||0)); closeSheet(); buy(k,n); }; }); });
   } else {
     L.innerHTML=Object.entries(ANIMALS).map(([k,a])=>`<div class="item"><span class="ic">${a.ic}</span><span class="grow"><span class="nm">${a.name}</span><br><span class="sub">${a.product==="coin"?`가끔 동전을 물어와요`:`${fmt(a.every)}마다 ${ITEMS[a.product].name}`}</span></span>
-      <span class="price">🪙${a.cost}</span><button class="btn sm" data-an="${k}">데려오기</button></div>`).join("")+`<p class="note">동물은 ${maxAnimals()}마리까지 키울 수 있어요. 집을 층 올리기·옆으로 넓히기 하면 2마리씩 더 키울 수 있어요.</p>`;
+      <span class="price">🪙${a.cost}</span><button class="btn sm" data-an="${k}">데려오기</button></div>`).join("")+`<p class="note">동물은 ${maxAnimals()}마리까지 키울 수 있어요. 집을 층 올리기·옆으로 넓히기 하거나 시장 › 사기에서 우리를 넓히면 2마리씩 더 키울 수 있어요.</p>`;
     L.querySelectorAll("[data-an]").forEach(b=>b.onclick=()=>{
       const k=b.dataset.an; if(S.animals.length>=maxAnimals()){ toast("우리가 꽉 찼어요"); SFX.no(); return; }
       if(!pay(ANIMALS[k].cost)) return; S.animals.push({type:k,at:Date.now()}); logAct(`${ANIMALS[k].name} 데려오기`); save(); voice(k); toast(`${ANIMALS[k].name}를 데려왔어요`); render(); });
@@ -2987,12 +3276,13 @@ function vDress(v){
 function vNeighbors(v){
   if(mode!=="db") return sharedOnly(v);
   const list=players.filter(p=>p.nick&&idFor(p.nick)!==docId&&(isOwnerView||shown(idFor(p.nick)))).sort((a,b)=>(onlineIds.has(idFor(b.nick))-onlineIds.has(idFor(a.nick))));
-  v.innerHTML=`<div class="row"><h2 class="grow">이웃 마을</h2><button class="btn sm sub" id="nbWorld">🗺 전체지도</button></div>${list.length?`<div class="list">${list.map(p=>{ const on=onlineIds.has(idFor(p.nick)); return `<button class="neighbor" data-v="${esc(idFor(p.nick))}">${charImg(p.char||{})}<span class="grow"><b style="font-family:var(--display);font-weight:400;font-size:17px">${esc(p.nick)}</b> · ${esc(p.village)}${on?` <span class="on">● 접속 중</span>`:""}<br><span class="note">${isAway(p)&&!on?esc(awayText(p))+" · ":""}${p.house&&p.house.mat?`${MATS[p.house.mat]} ${p.house.level||1}층${housesOf(p).filter(h=>h.mat).length>1?` 외 ${housesOf(p).filter(h=>h.mat).length-1}채`:""}`:"집 짓는 중"} · 동물 ${(p.animals||[]).length}마리 · ${on?"지금 함께 있어요":ago(p.updatedAt||0)+" 접속"}</span></span>${siteHidden.has(idFor(p.nick))?`<span class="chip">숨김</span>`:`<span class="btn sm">찾아가기</span>`}</button><button class="btn sm sub hidebtn" data-dmto="${esc(idFor(p.nick))}">💌 비밀 채팅</button>${isOwnerView?`<button class="btn sm sub hidebtn" data-hide="${esc(idFor(p.nick))}">${siteHidden.has(idFor(p.nick))?"다시 보이기":"모두에게 숨기기"}</button>`:""}`}).join("")}</div>
+  v.innerHTML=`<div class="row"><h2 class="grow">이웃 마을</h2><button class="btn sm sub" id="nbWorld">🗺 전체지도</button></div>${list.length?`<div class="list">${list.map(p=>{ const on=onlineIds.has(idFor(p.nick)); return `<button class="neighbor" data-v="${esc(idFor(p.nick))}">${charImg(p.char||{})}<span class="grow"><b style="font-family:var(--display);font-weight:400;font-size:17px">${esc(p.nick)}</b> · ${esc(p.village)}${on?` <span class="on">● 접속 중</span>`:""}<br><span class="note">${isAway(p)&&!on?esc(awayText(p))+" · ":""}${p.house&&p.house.mat?`${MATS[p.house.mat]} ${p.house.level||1}층${housesOf(p).filter(h=>h.mat).length>1?` 외 ${housesOf(p).filter(h=>h.mat).length-1}채`:""}`:"집 짓는 중"} · 동물 ${(p.animals||[]).length}마리 · ${on?"지금 함께 있어요":ago(p.updatedAt||0)+" 접속"}</span></span>${siteHidden.has(idFor(p.nick))?`<span class="chip">숨김</span>`:`<span class="btn sm">찾아가기</span>`}</button><button class="btn sm sub hidebtn" data-dmto="${esc(idFor(p.nick))}">💌 비밀 채팅</button>${on?`<button class="btn sm sub hidebtn" data-rps="${esc(idFor(p.nick))}" data-rn="${esc(p.nick)}">✊ 가위바위보</button>`:""}${isOwnerView?`<button class="btn sm sub hidebtn" data-hide="${esc(idFor(p.nick))}">${siteHidden.has(idFor(p.nick))?"다시 보이기":"모두에게 숨기기"}</button>`:""}`}).join("")}</div>
     ${isOwnerView?`<p class="note">마을 주인만 보이는 버튼이에요. 숨긴 사람은 다른 사람 화면(전체지도, 이웃, 채팅, 함께 있는 캐릭터)에서 사라지고, 그 사람이 키운 마을과 기록은 그대로 남아요.</p>`:""}`
     :`<p class="note">아직 이웃이 없어요. 이 페이지 링크를 가족, 친구에게 보내주세요.</p>`}`;
   v.querySelector("#nbWorld").onclick=()=>{ tab="village"; enterWorld(); renderTabs(); };
   v.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>toggleHidden(b.dataset.hide));
   v.querySelectorAll("[data-dmto]").forEach(b=>b.onclick=()=>openDm(b.dataset.dmto));
+  v.querySelectorAll("[data-rps]").forEach(b=>b.onclick=()=>rpsChallenge(b.dataset.rps,b.dataset.rn));
   v.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
     if(siteHidden.has(b.dataset.v)){ toast("숨긴 사람의 마을이에요. 다시 보이기를 누르면 찾아갈 수 있어요"); return; }
     const target=villages().find(x=>x.p.pid===b.dataset.v); if(!target) return;
@@ -3151,6 +3441,7 @@ let sleepTick=0, yawnAt=0;
 setInterval(()=>{
   if(!S) return;
   settleLure();
+  if(!rpsActive) giantCheck();
   if(isMoving(W[where])) markActive();
   if(!resting&&!buffOn()&&Date.now()-lastActiveAt<10000&&energy()>0){ setEnergy(energy()-100/600); if(++sleepTick%15===0) save(); }
   if(jailed()&&tab==="village"&&(visitId!==myJail().owner||where!=="map"||Math.hypot(W.map.x-JAIL.x,W.map.y-JAIL.y-.2)>.9)&&!isMoving(W.map)) enforceJail();
