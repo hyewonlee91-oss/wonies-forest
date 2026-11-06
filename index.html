@@ -434,7 +434,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <script>
 // 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
 (function(){
-  var V="11.05-6";
+  var V="11.07-2";
   window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
   setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
     var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
@@ -499,7 +499,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.05-6</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.07-2</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -811,10 +811,16 @@ async function hashPin(nick,pin){
 }
 // 업데이트 소식: 새 소식을 넣을 때 NEWS에 날짜(id)와 내용을 적어요.
 // 사람마다 한 번만 떠요(다음 접속부터는 안 뜸). 비어 있으면 아무것도 안 떠요.
-const NEWS={id:"2026-11-05b", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
+const NEWS={id:"2026-11-07c", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
+  {h:"🔒 자물쇠 · 🏚 창고", d:"시장 › 사기에서 하루 🪙10,000으로 우리 자물쇠(동물·생산품 못 가져감)와 작물 창고(작물 못 훔쳐가고 멧돼지도 못 옴)를 쓸 수 있어요."},
+  {h:"✊ 가위바위보 벌칙이 바뀌었어요", d:"이제 지면 물건을 안 잃어요! 대신 하루 동안 집 앞에 \"○○에게 가위바위보 짐 😭\" 팻말이 붙고 모두에게 소식이 가요."},
+  {h:"🌱 훔친 작물은 우리 밭으로", d:"친구 밭에서 몰래 가져온 작물은 우리 밭 빈 칸에 옮겨 심어져요. 집에 가서 수확해요!"},
+  {h:"🥛 동물 생산품 몰래 가져가기", d:"친구 동물을 누르면 유인 말고도 다 만들어진 우유·달걀·양털을 몰래 가져올 수 있어요."},
+  {h:"🦹 훔치기는 하루 5번", d:"밭·동물·생산품·집 층 훔치기를 합쳐서 하루에 5번까지 할 수 있어요."},
+  {h:"📰 마을 소식", d:"우리 문 열기, 가위바위보 벌칙 같은 큰 사건은 들어올 때 모두에게 알려줘요."},
   {h:"🐗 멧돼지 풀기", d:"친구 밭을 누르면 몰래 수확 말고 🐗 멧돼지 풀기도 할 수 있어요. 멧돼지가 그 집 밭의 10%를 먹어치워서 아예 없어져요! (한 집에 하루 한 번) 그 자리엔 하루 동안 발자국이 남아요."},
   {h:"❓ 금요일 마을 퀴즈", d:"금요일마다 처음 들어오면 마을 사람들 이야기로 퀴즈가 나와요. 찍어도 돼요! 맞힌 문제 하나에 🪙200."},
-  {h:"👑 왕이 되면 선물!", d:"어제의 왕으로 뽑히면 선물을 하나 골라요. 🔓 남의 집 우리 열어두기(동물이 이웃들에게 흩어져요) · 🧺 다 익은 작물 몽땅 수확 · 🧚 보디가드 도우미 요정 하루."},
+  {h:"👑 왕이 되면 선물!", d:"어제의 왕으로 뽑히면 선물을 하나 골라요. 🔓 남의 집 우리 열어두기(주인이 돌아오면 동물이 주인 포함 모두의 집으로 흩어져요) · 🧺 다 익은 작물 몽땅 수확 · 🧚 보디가드 도우미 요정 하루."},
   {h:"🎣 낚시를 할 수 있어요", d:"마을의 물(연못·개울)을 누르면 낚시를 해요. 찌에 ❗가 뜨면 바로 당겨요! 붕어부터 상어🦈, 고래🐋까지 잡혀요. 가방에서 🔪 회를 뜨고, 회 한 점은 고양이에게 줄 수 있어요. 상어·고래는 거인에게 먹이면 선물을 잔뜩 줘요."},
   {h:"🙌 거인이 들어 올려줘요", d:"하루에 한 번 거인이 놀러 와서 \"위로 들어줄까?\" 하고 물어봐요. 응!을 누르면 높이 들려서 마을을 한눈에 내려다봐요."},
   {h:"🏆 어제의 왕", d:"매일 첫 접속 때 어제의 훔치기왕(대도)·활동왕·낚시왕을 알려줘요. 🎉 축하하거나 🙏 나 좀 줘라고 조를 수 있어요."},
@@ -823,7 +829,7 @@ const NEWS={id:"2026-11-05b", title:"🎉 새로운 기능이 추가되었어요
   {h:"✏️ 개수 정해서 만들기·사기", d:"만들기와 동물 데려오기에도 ✏️ 버튼이 생겨서 원하는 개수만큼 한 번에 해요. 큰 수량도 다 살 수 있어요."},
   {h:"👣 털린 자리 표시 · 넓어지는 우리", d:"누가 내 밭·동물·집을 털어가면 하루 동안 그 자리에 발자국과 이름이 남아요. 동물이 300마리를 넘으면 우리가 하나 더 생겨요."},
   {h:"🚨 마을에 거인이 나타나요!", d:"가끔 마을에 거인이 쿵쿵 걸어와요. 나타나면 '간지럽히기' 버튼을 마구 눌러서 막아요! 막으면 하늘에서 선물 상자가 쏟아지고, 못 막으면 밭 한 칸이 밟혀요."},
-  {h:"✊ 가위바위보 내기", d:"이웃 탭에서 접속 중인 친구에게 가위바위보 삼세판을 신청할 수 있어요. 수락하면 쉬기 장소에서 만나 승부! 진 사람은 가진 것 중 가장 비싼 것(집 층수의 10%·탈것·동물 전부·가장 비싼 물건 전부)을 이긴 사람에게 줘요."},
+  {h:"✊ 가위바위보 내기", d:"이웃 탭에서 접속 중인 친구에게 가위바위보 삼세판을 신청할 수 있어요. 수락하면 쉬기 장소에서 만나 승부! 진 사람 집 앞에는 하루 동안 \"○○에게 가위바위보 짐 😭\" 벌칙 팻말이 붙고, 모두에게 소식이 가요. 물건은 안 잃어요!"},
   {h:"🧺 동물 것도 한 번에", d:"동물 하나만 눌러도 준비된 동물들의 달걀·우유·양털·동전을 한 번에 거둬요."},
   {h:"🐾 동물 우리 넓히기", d:"시장 › 사기에서 동물 우리를 넓히면 2마리씩 더 키울 수 있어요."},
   {h:"🏠 집을 넓히면 좋은 점이 생겼어요", d:"층 올리기나 옆으로 넓히기를 한 번 할 때마다 동물을 2마리 더 키울 수 있고, 매일 처음 들어올 때 집세 🪙30씩을 더 받아요."},
@@ -1078,7 +1084,7 @@ const GUIDE=[
     {h:"🪢 줄다리기", d:"이웃 탭에서 접속 중인 친구에게 신청해요. 10초 동안 더 많이 누르면 이기고, 진 사람은 동전 10%를 줘요."},
     {h:"🙌 거인 손바닥", d:"하루에 한 번 거인이 놀러 와서 들어 올려줘요. 마을을 하늘에서 내려다봐요."},
     {h:"🚨 거인 출몰", d:"가끔 마을에 거인이 나타나요. '간지럽히기'를 마구 눌러서 막으면 선물 상자가 쏟아져요. 상자를 눌러 열면 동전·케이크·재료, 운이 좋으면 💎 잭팟!"},
-    {h:"✊ 가위바위보 내기", d:"이웃 탭에서 접속 중인 친구에게 신청해요. 수락하면 쉬기 장소에서 만나 삼세판! 진 사람은 가진 것 중 가장 비싼 것(집 층수의 10%·탈것·동물 전부·가장 비싼 물건 전부)을 줘요."},
+    {h:"✊ 가위바위보 내기", d:"이웃 탭에서 접속 중인 친구에게 신청해요. 수락하면 쉬기 장소에서 만나 삼세판! 진 사람 집 앞에 하루 동안 벌칙 팻말이 붙어요. 물건은 안 잃어요!"},
     {h:"🧺 한 번에 거두기", d:"다 익은 작물이 10개 이상이면 10개씩, 동물은 하나만 눌러도 준비된 동물들 것을 한 번에 거둬요."},
     {h:"🐾 우리·집 넓히기", d:"시장 › 사기에서 동물 우리를 넓히거나 집을 증축하면 동물을 2마리씩 더 키워요. 집을 넓히면 매일 집세도 받아요."},
     {h:"💰 감옥", d:"보디가드에게 잡히면 보석금 🪙3000을 내거나, 반성문을 쓰거나, 감옥을 받아들이고 운동해요."}
@@ -1171,6 +1177,7 @@ function subscribe(){
     const nw=myNotes[0]; if(inboxShown&&nw&&before&&nw.at>before&&nw.kind==="argue") toast(`😤 ${nw.fromNick}님이 따지러 왔어요: ${nw.text}`); });
   on(db.collection("thefts").orderBy("at","desc").limit(200),s=>{ thefts=s.docs.map(d=>({id:d.id,...d.data()})); processThefts(); animsKey=""; });
   on(db.collection("jails").orderBy("at","desc").limit(100),s=>{ jails=s.docs.map(d=>({id:d.id,...d.data()})); onJails(); });
+  on(db.collection("events").orderBy("at","desc").limit(20),s=>{ villageEvents=s.docs.map(d=>({id:d.id,...d.data()})); });
   on(db.collection("escapes").where("to","==",docId).limit(50),s=>{ escapes=s.docs.map(d=>({id:d.id,...d.data()})); processEscapes(); });
   let rIn=[], rOut=[]; const mergeR=()=>{ rpsDocs=[...rIn,...rOut]; onRps(); };
   on(db.collection("rps").where("to","==",docId).limit(50),s=>{ rIn=s.docs.map(d=>({id:d.id,...d.data()})); mergeR(); });
@@ -1694,6 +1701,7 @@ function drawMap(c,t,time,dt){
   // 울타리
   penList.forEach((P2,pi)=>{ if(pi>0){ c.fillStyle="#c9b07a"; c.globalAlpha=.35; c.fillRect(P2.x*t,P2.y*t,P2.w*t,P2.h*t); c.globalAlpha=1; }
     c.strokeStyle="#9a6a45"; c.lineWidth=3; c.strokeRect(P2.x*t+2,P2.y*t+2,P2.w*t-4,P2.h*t-4);
+    if(lockOn(o)){ emo(c,"🔒",(P2.x+P2.w/2)*t,P2.y*t,t*.7); }
     c.lineWidth=1.5; for(let i=0;i<=P2.w*2;i++){ const px=P2.x*t+i*t/2; c.beginPath(); c.moveTo(px,P2.y*t-2); c.lineTo(px,P2.y*t+8); c.stroke(); } });
   // 밭
   const F=fieldOf(o);
@@ -1740,10 +1748,12 @@ function drawMap(c,t,time,dt){
     else { const dx=a.tx-a.x, dy=a.ty-a.y, d=Math.hypot(dx,dy), sp=Math.min(d,dt*.7); a.x+=dx/d*sp; a.y+=dy/d*sp; }
     a.say=Math.max(0,a.say-dt);
     items.push({y:a.y,d:()=>{ const bob=Math.abs(Math.sin(time*4+a.i))*t*.05; emo(c,ANIMALS[a.type].ic,a.x*t,a.y*t-bob,t*.7);
-      const src=animalsOf(o)[a.i]; if(src&&animalReady(src)) emo(c,ANIMALS[a.type].product==="coin"?"🪙":ITEMS[ANIMALS[a.type].product].ic,a.x*t+t*.32,a.y*t-t*.38,t*.3);
+      const src=animalsOf(o)[a.i]; if(src&&animalReady(src)&&(o===S||!productTaken(o,src))) emo(c,ANIMALS[a.type].product==="coin"?"🪙":ITEMS[ANIMALS[a.type].product].ic,a.x*t+t*.32,a.y*t-t*.38,t*.3);
       if(a.say>0) label(c,ANIMALS[a.type].say,a.x*t,a.y*t-t*.5,Math.max(11,t*.3)); }});
   });
   drawGuardJail(items,c,t,time,o);
+  if(barnOn(o)){ const ks=Object.keys(fieldOf(o)); if(ks.length){ const [bx,by]=ks[0].split(",").map(Number); items.push({y:by,d:()=>drawSign(c,"🏚 창고 지키는 중",(bx+.5)*t,(by+.1)*t,t,1.1)}); } }
+  if(o.shameSign&&o.shameSign.until>Date.now()){ const ss=o.shameSign; items.push({y:DOOR.y+1.6,d:()=>drawSign(c,`🪧 ${ss.text}`,(DOOR.x+.5)*t,(DOOR.y+2.2)*t,t,1.3)}); }
   const ph=peersHere();
   const ownerOn=visitId&&onlineIds.has(visitId), away=visitId&&isAway(o)&&!ownerOn, signTxt=visitId&&!ownerOn&&!away&&o.sign?`🪧 ${o.nick}: ${o.sign}`:"";
   if(visitId&&!away&&!signTxt&&!ph.some(p=>p.id===visitId)) items.push({y:DOOR.y+.4,d:()=>{ drawChar(c,o.char,(DOOR.x+1.6)*t,(DOOR.y+.4)*t,t,{name:o.nick,id:visitId});
@@ -2494,23 +2504,46 @@ function bagSheet(tb){
 
 // ---------- 친구 작물 몰래 수확 + 경찰 출동 ----------
 function siren(){ [0,.36,.72].forEach(a=>{ tone(920,.3,{at:a,type:"square",vol:.03}); tone(690,.3,{at:a+.18,type:"square",vol:.03}); }); }
+// 🦹 훔치기는 하루 5번까지 (밭·동물·생산품·집 층 모두 합쳐서)
+const STEAL_MAX=5, LOCK_COST=10000, BARN_COST=10000;
+// 🔒 자물쇠(동물 보호) · 🏚 창고(작물 보호): 하루씩
+const lockOn=o=>!!o&&(o.lockUntil||0)>Date.now(), barnOn=o=>!!o&&(o.barnUntil||0)>Date.now();
+function stealLeft(){ const t=dayStr(); if(!S.stealDay||S.stealDay.date!==t) S.stealDay={date:t,n:0}; return STEAL_MAX-S.stealDay.n; }
+function canSteal(){ if(stealLeft()<=0){ SFX.no(); toast(`🦹 오늘은 ${STEAL_MAX}번 다 훔쳤어요. 내일 다시 할 수 있어요!`); return false; } return true; }
+function usedSteal(){ stealLeft(); S.stealDay.n++; const l=STEAL_MAX-S.stealDay.n; setTimeout(()=>toast(`🦹 오늘 훔치기 ${l}번 남았어요`),2300); }
+// 훔친 작물을 우리 밭 빈 칸에 옮겨 심어요
+function transplantSpot(){
+  const ks=Object.keys(S.field||{}).map(k=>k.split(",").map(Number)); const cx=ks.length?ks.reduce((a,p)=>a+p[0],0)/ks.length:PATH_X-3, cy=ks.length?ks.reduce((a,p)=>a+p[1],0)/ks.length:DOOR.y+3;
+  let best=null;
+  for(let y=2;y<MR-2;y++) for(let x=1;x<MC-1;x++){ const k=x+","+y; if(S.field[k]) continue; const kd=tileKind(x,y); if(kd!=="grass") continue; if(houseAt(S,x,y)>=0||garageAt(S,x,y)) continue;
+    const d=Math.hypot(x-cx,y-cy); if(!best||d<best.d) best={k,d}; }
+  return best&&best.k;
+}
 async function stealAt(x,y){
   const o=owner(), k=x+","+y, f=fieldOf(o)[k]; if(!visitId||!f||plotState(f).stage!=="ready") return;
+  if(barnOn(o)){ SFX.no(); toast("🏚 작물을 창고에 넣어 잠가뒀어요! 오늘은 못 가져가요"); return; }
   const c=CROPS[f.crop], n=c.yield, key=visitId+"|"+k+"|"+f.at; if(myTakes.has(key)){ toast("방금 가져간 작물이에요"); return; }
+  if(!canSteal()) return;
   if(guardWatching(o)){ caughtByGuard(o,`${c.item||c.name} 몰래 수확`); return; }
   if(!useEnergy("steal",true)) return;
-  bump("stealCrops",n);
+  bump("stealCrops",n); usedSteal();
   const rec={to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:f.crop,n,key:k,plantedAt:f.at,at:Date.now(),applied:false,seen:false};
-  myTakes.set(key,rec); addInv(f.crop,n); if(f.crop==="rice") addInv("hay",2);
+  myTakes.set(key,rec);
+  const spot=transplantSpot();
+  if(spot){ S.field[spot]={crop:f.crop,at:Date.now()-c.time*1000-1000,dur:c.time}; }
+  else { addInv(f.crop,n); if(f.crop==="rice") addInv("hay",2); }
   sel=null; save(); SFX.harvest(); siren(); puff(x+.5,y+.4,"#ffd84d"); sayBubble(docId,"🚓 삐뽀삐뽀!");
-  logAct(`${o.nick}님 ${c.item||c.name} ${n}개 몰래 수확`); toast(`${c.item||c.name} ${n}개를 몰래 수확했어요! 🚓 경찰이 출동했대요`); renderAct();
+  logAct(`${o.nick}님 ${c.item||c.name} 몰래 가져오기`);
+  toast(spot?`🌱 ${c.ic} ${c.item||c.name}을(를) 쏙 뽑아서 우리 밭에 옮겨 심었어요! 집에 가서 수확해요 🚓 경찰이 출동했대요`:`우리 밭에 빈 칸이 없어서 ${c.item||c.name} ${n}개를 가방에 넣었어요! 🚓 경찰이 출동했대요`); renderAct();
   if(mode==="db") db.collection("thefts").add(rec).catch(()=>{});
 }
 function processThefts(){
   if(!S||mode!=="db") return; let changed=false, fresh=0;
   [...thefts].sort((a,b)=>a.at-b.at).forEach(t=>{ if(t.to!==docId||t.applied||handledThefts.has(t.id)) return; handledThefts.add(t.id); fresh++;
+    if(t.kind==="product"){ Object.entries(t.types||{}).forEach(([ty,n])=>{ let left=n; S.animals.forEach(a=>{ if(left>0&&a.type===ty&&a.at<t.at&&animalReady(a)){ a.at=t.at; left--; } }); }); changed=true; db.doc("thefts/"+t.id).update({applied:true}).catch(()=>{}); return; }
     if(t.kind==="boar"){ (t.keys||[]).forEach(k=>{ if(S.field&&S.field[k]){ delete S.field[k]; changed=true; } }); db.doc("thefts/"+t.id).update({applied:true}).catch(()=>{}); return; }
-    if(t.kind==="penopen"){ db.doc("thefts/"+t.id).update({applied:true}).catch(()=>{}); scatterAnimals(t).then(r=>{ save(); render(); toast(`🔓 ${t.fromNick}님(어제의 왕)이 우리 문을 열어서 동물 ${r.n}마리가 이웃 집들로 도망갔어요 😱`); }); changed=true; return; }
+    if(t.kind==="penopen"&&t.scattered){ const n=S.animals.length; S.animals=[]; animsKey=""; changed=true; db.doc("thefts/"+t.id).update({applied:true}).catch(()=>{}); setTimeout(()=>toast(`🔓 ${t.fromNick}님(어제의 왕)이 우리 문을 열어서 동물 ${n}마리가 이웃 집들로 도망갔어요 😱`),1500); return; }
+    if(t.kind==="penopen"){ db.doc("thefts/"+t.id).update({applied:true}).catch(()=>{}); scatterAnimals(t).then(r=>{ save(); render(); toast(`🔓 ${t.fromNick}님(어제의 왕)이 우리 문을 열어서 동물 ${r.n}마리가 모두의 집으로 흩어졌어요 😱 (우리 집에 ${S.animals.length}마리 남음)`); }); changed=true; return; }
     if(t.kind==="floors"){ const h=S.houses[t.hi||0]; if(h&&h.mat){ const nl=Math.max(1,(h.level||1)-(t.n||1)); S.furnStore=S.furnStore||{};
         (S.room||[]).filter(f=>(f.h||0)===(t.hi||0)&&(f.fl||0)>=nl).forEach(f=>{ S.furnStore[f.k]=(S.furnStore[f.k]||0)+1; });
         S.room=(S.room||[]).filter(f=>!((f.h||0)===(t.hi||0)&&(f.fl||0)>=nl)); h.level=nl; changed=true; }
@@ -2529,7 +2562,7 @@ function policeSheet(){
   if(!th.length){ toast("새로 출동한 일은 없어요"); return; }
   const by={}; th.forEach(t=>{ (by[t.from]=by[t.from]||{nick:t.fromNick,list:[]}).list.push(t); });
   openSheet("🚓 경찰 출동!",`<div class="guide"><div class="gic siren">🚓</div><h2>누가 내 농작물·동물을 몰래 가져갔어요!</h2>
-    ${Object.entries(by).map(([fid,g])=>`<div class="thief"><p><b>${esc(g.nick)}</b>님이 ${g.list.map(t=>t.kind==="boar"?`🐗 멧돼지를 풀어서 밭 ${t.n}칸`:t.kind==="penopen"?`🔓 우리 문을 열어서 동물 ${t.n}마리`:t.kind==="floors"?`🏗 집 ${t.n}층`:t.kind==="animal"?`${ANIMALS[t.animal].ic} ${ANIMALS[t.animal].name} ${t.n||1}마리`:`${itemIc(t.crop)} ${esc(itemName(t.crop))} ${t.n}개`).join(", ")}를 몰래 데려갔어요.</p>
+    ${Object.entries(by).map(([fid,g])=>`<div class="thief"><p><b>${esc(g.nick)}</b>님이 ${g.list.map(t=>t.kind==="product"?`🥛 동물 ${t.n}마리의 생산품`:t.kind==="boar"?`🐗 멧돼지를 풀어서 밭 ${t.n}칸`:t.kind==="penopen"?`🔓 우리 문을 열어서 동물 ${t.n}마리`:t.kind==="floors"?`🏗 집 ${t.n}층`:t.kind==="animal"?`${ANIMALS[t.animal].ic} ${ANIMALS[t.animal].name} ${t.n||1}마리`:`${itemIc(t.crop)} ${esc(itemName(t.crop))} ${t.n}개`).join(", ")}를 몰래 데려갔어요.</p>
       <button class="btn sm" data-argue="${esc(fid)}" data-nick="${esc(g.nick)}">🚶 따지러 가기</button></div>`).join("")}</div>
     <button class="btn sub" data-close>알겠어요</button>`,w=>{
     w.querySelectorAll("[data-argue]").forEach(b=>b.onclick=()=>argueSheet(b.dataset.argue,b.dataset.nick)); });
@@ -2552,28 +2585,52 @@ const LURE_FOOD={chicken:"rice",cow:"hay",sheep:"apple",cat:"milk",dog:"cheese"}
 function animalsOf(o){
   const list=o.animals||[]; if(o===S||!thefts.length) return list;
   const pid=idFor(o.nick), take={};
-  if(thefts.some(t=>t.kind==="penopen"&&t.to===pid&&!t.applied)) return [];
   thefts.forEach(t=>{ if(t.kind==="animal"&&t.to===pid&&!t.applied) take[t.animal]=(take[t.animal]||0)+(t.n||1); });
   if(!Object.keys(take).length) return list;
   return list.filter(a=>{ if(take[a.type]>0){ take[a.type]--; return false; } return true; });
 }
+function productTaken(o,src){ const pid=idFor(o.nick); return thefts.some(t=>t.kind==="product"&&t.to===pid&&!t.applied&&t.at>src.at)||(myProd[pid]||0)>src.at; }
+let myProd={};
+function readyProducts(o){ return animalsOf(o).filter(a=>animalReady(a)&&!productTaken(o,a)); }
+function stealProducts(){
+  const o=owner(); if(!visitId) return; const ready=readyProducts(o);
+  if(!ready.length){ toast("지금 다 만들어진 생산품이 없어요"); return; }
+  if(lockOn(o)){ SFX.no(); toast("🔒 우리에 자물쇠가 걸려 있어서 생산품도 못 가져가요"); return; }
+  if(!canSteal()) return;
+  if(guardWatching(o)){ caughtByGuard(o,"동물 생산품 몰래 가져가기"); return; }
+  if(!useEnergy("steal",true)) return; usedSteal();
+  const got={}, types={}; let coins=0;
+  ready.forEach(a=>{ const B=ANIMALS[a.type]; types[a.type]=(types[a.type]||0)+1; if(B.product==="coin") coins+=5+Math.floor(Math.random()*11); else { addInv(B.product,1); got[B.product]=(got[B.product]||0)+1; } });
+  S.coins+=coins; myProd[visitId]=Date.now(); bump("stealCrops",ready.length);
+  const rec={kind:"product",types,n:ready.length,to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:"milk",at:Date.now(),applied:false,seen:false};
+  if(mode==="db") db.collection("thefts").add(rec).catch(()=>{});
+  const parts=Object.entries(got).map(([k,n])=>`${ITEMS[k].ic} ${ITEMS[k].name} ${n}개`); if(coins) parts.push(`🪙${coins}`);
+  siren(); SFX.harvest(); sayBubble(docId,"🥛 쉿… 살금살금"); logAct(`${o.nick}님 동물 생산품 몰래 가져가기`); save(); renderTop();
+  toast(`🥛 ${o.nick}님 동물 ${ready.length}마리의 생산품을 몰래 가져왔어요! ${parts.join(", ")} 🚓 경찰이 출동했대요`);
+}
 function lureSheet(type){
   const o=owner(), A=ANIMALS[type], fk=LURE_FOOD[type], F=ITEMS[fk], have=inv(fk);
+  if(lockOn(o)){ SFX.no(); toast(`🔒 ${o.nick}님 우리에 자물쇠가 걸려 있어요. 오늘은 동물도 생산품도 못 가져가요`); return; }
   if(S.luring){ toast(`이미 ${ANIMALS[S.luring.type].name}가 따라오고 있어요. 먼저 집에 데려가요`); return; }
   const cnt=animalsOf(o).filter(a=>a.type===type).length, max=Math.max(0,Math.min(cnt,have,100));
   openSheet(`${A.ic} ${A.name} 유인하기`,`<div class="guide"><div class="gic">${A.ic}</div><h2>${esc(o.nick)}님의 ${A.name}를 데려갈까요?</h2>
     <p>${A.name}가 좋아하는 <b>${F.ic} ${F.name}</b> 한 마리에 1개씩 줘서 우리 집까지 데려가요. (${A.name} ${cnt}마리 · 가진 ${F.name} ${have}개)</p>
     ${max>1?`<div class="row"><label class="lbl grow" for="lureN">몇 마리? (한 번에 100마리까지)</label><input id="lureN" type="number" min="1" max="${max}" value="${max}" inputmode="numeric" style="width:90px"><button class="btn sm sub" id="lureMax">최대 ${max}</button></div>`:""}
     <p class="note">집 우리가 꽉 차 있으면 도착하자마자 도망가 버려요. 들키면 경찰이 출동하고, 보디가드가 있으면 감옥에 갇혀요!</p></div>
-    <div class="row"><button class="btn sub grow" data-close>그만둘래요</button><button class="btn grow" id="lureGo" ${have?"":"disabled"}>${F.ic} 주면서 유인하기</button></div>`,w=>{
+    <div class="row"><button class="btn sub grow" data-close>그만둘래요</button><button class="btn grow" id="lureGo" ${have?"":"disabled"}>${F.ic} 주면서 유인하기</button></div>
+    ${(()=>{ const r=readyProducts(o); return `<button class="btn ${r.length?"":"sub"}" id="prodGo" style="margin-top:8px" ${r.length?"":"disabled"}>🥛 생산품만 몰래 가져가기 ${r.length?`(준비된 동물 ${r.length}마리)`:"(지금은 없어요)"}</button>`; })()}
+    <p class="note">오늘 훔치기 ${Math.max(0,stealLeft())}번 남았어요 (하루 ${STEAL_MAX}번)</p>`,w=>{
+    const pg=w.querySelector("#prodGo"); if(pg) pg.onclick=()=>{ closeSheet(); stealProducts(); };
     const num=w.querySelector("#lureN"), mx=w.querySelector("#lureMax"); if(mx) mx.onclick=()=>num.value=max;
     w.querySelector("#lureGo").onclick=()=>{ const n=num?Math.max(1,Math.min(max,parseInt(num.value)||1)):1; closeSheet(); lureAnimal(type,n); }; });
 }
 function lureAnimal(type,n=1){
   const o=owner(), A=ANIMALS[type], fk=LURE_FOOD[type]; n=Math.min(n,inv(fk),animalsOf(o).filter(a=>a.type===type).length); if(!visitId||n<1) return;
+  if(lockOn(o)){ SFX.no(); toast("🔒 우리에 자물쇠가 걸려 있어서 동물을 못 데려가요"); return; }
+  if(!canSteal()) return;
   if(guardWatching(o)){ caughtByGuard(o,`${A.name} 유인`); return; }
   if(!useEnergy("steal",true)) return;
-  addInv(fk,-n); bump("stealAnimals",n);
+  addInv(fk,-n); bump("stealAnimals",n); usedSteal();
   const rec={kind:"animal",animal:type,to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,crop:"a_"+type,n,at:Date.now(),applied:false,seen:false};
   S.luring={type,n,from:visitId,fromNick:o.nick,at:Date.now()}; animsKey="";
   if(mode==="db") db.collection("thefts").add(rec).catch(()=>{}); else thefts.unshift({id:"local"+Date.now(),...rec});
@@ -2904,7 +2961,7 @@ function drawGiant(items,c,t,time){
 }
 
 // =====================================================================
-// ✊ 가위바위보 삼세판 (둘 다 접속 중일 때) — 지면 가진 것 중 가장 비싼 걸 줘요
+// ✊ 가위바위보 삼세판 (둘 다 접속 중일 때) — 지면 하루 동안 벌칙 팻말
 // =====================================================================
 const RPS={rock:"✊",scissors:"✌️",paper:"🖐"}, RPS_NAME={rock:"바위",scissors:"가위",paper:"보"};
 const rpsBeats=(a,b)=>(a==="rock"&&b==="scissors")||(a==="scissors"&&b==="paper")||(a==="paper"&&b==="rock");
@@ -2918,7 +2975,7 @@ function rpsChallenge(pid,nick){
   if(mode!=="db") return; if(!onlineIds.has(pid)){ toast("친구가 접속 중일 때만 신청할 수 있어요"); return; }
   if(rpsActive||rpsDocs.some(d=>d.status==="pending"&&d.from===docId&&Date.now()-d.at<60000)){ toast("이미 신청한 승부가 있어요"); return; }
   openSheet("✊ 가위바위보 신청",`<div class="guide"><div class="gic">✊✌️🖐</div><h2>${esc(nick)}님에게 가위바위보 삼세판을 신청할까요?</h2>
-    <p>먼저 2번 이기는 사람이 승리! <b>진 사람은 가진 것 중 가장 비싼 것</b>(집 층수의 10%·탈것·동물 전부·가장 비싼 물건 전부 중 하나)을 이긴 사람에게 줘요.</p></div>
+    <p>먼저 2번 이기는 사람이 승리! <b>진 사람 집 앞에는 하루 동안 "○○에게 가위바위보 짐 😭" 벌칙 팻말</b>이 붙고, 모두에게 소식이 가요. 물건은 안 잃어요.</p></div>
     <div class="row"><button class="btn sub grow" data-close>그만둘래요</button><button class="btn grow" id="rpsGo">신청하기</button></div>`,w=>{
     w.querySelector("#rpsGo").onclick=async()=>{ closeSheet(); const id="r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
       try{ await db.doc("rps/"+id).set({from:docId,fromNick:S.nick,to:pid,toNick:nick,status:"pending",at:Date.now()}); toast(`${nick}님에게 신청했어요. 수락하면 쉬기 장소에서 만나요!`); SFX.note(); logAct(`${nick}님에게 가위바위보 신청`); }
@@ -2938,7 +2995,7 @@ function rpsAsk(d){
   siren(); SFX.note();
   const tug=d.game==="tug";
   openSheet(tug?"🪢 줄다리기 신청!":"✊ 가위바위보 승부 신청!",`<div class="guide"><div class="gic">${tug?"🪢":"✊✌️🖐"}</div><h2>${esc(d.fromNick)}님이 ${tug?"줄다리기":"가위바위보 삼세판"}을 신청했어요!</h2>
-    <p>${tug?"10초 동안 버튼을 더 많이 누르면 이겨요! 지면 <b>가진 동전의 10%</b>를 줘요.":"지면 가진 것 중 <b>가장 비싼 것</b>을 줘야 해요. 이기면 상대의 가장 비싼 걸 가져와요!"}</p></div>
+    <p>${tug?"10초 동안 버튼을 더 많이 누르면 이겨요! 지면 <b>가진 동전의 10%</b>를 줘요.":"지면 하루 동안 집 앞에 <b>벌칙 팻말</b>이 붙어요! 물건은 안 잃어요."}</p></div>
     <div class="row"><button class="btn sub grow" id="rpsNo">거절하기</button><button class="btn grow" id="rpsYes">수락! 붙어보자</button></div>`,w=>{
     w.querySelector("#rpsNo").onclick=()=>{ closeSheet(); db.doc("rps/"+d.id).update({status:"declined"}).catch(()=>{}); };
     w.querySelector("#rpsYes").onclick=()=>{ if(Date.now()-d.at>60000){ closeSheet(); toast("신청 시간이 지났어요"); return; } closeSheet(); db.doc("rps/"+d.id).update({status:"accepted",acceptedAt:Date.now()}).catch(()=>{}); }; });
@@ -2961,7 +3018,7 @@ function rpsRender(d){
   if(st.over){
     const win=st.winRole===me, pz=d.prize;
     body=`<div class="guide"><div class="gic">${win?"🏆":"😭"}</div><h2>${win?"이겼어요!":"졌어요…"}${d.forfeit?(win?" (상대가 포기했어요)":" (포기했어요)"):""}</h2>
-      <p>${pz?(win?`${esc(opNick)}님의 <b>${esc(pz.label)}</b>을(를) 가져왔어요!`:`<b>${esc(pz.label)}</b>을(를) ${esc(opNick)}님에게 줬어요`):pz===null||d.prizeNone?(win?`${esc(opNick)}님은 줄 게 하나도 없었어요 😅`:"줄 게 없어서 아무것도 안 줬어요"):"정산하는 중…"}</p></div>
+      <p>${pz&&pz.kind==="sign"?(win?`${esc(opNick)}님 집 앞에 하루 동안 벌칙 팻말이 붙었어요 😆`:`하루 동안 우리 집 앞에 "${esc(opNick)}에게 가위바위보 짐 😭" 팻말이 붙어요`):pz?(win?`${esc(opNick)}님의 <b>${esc(pz.label)}</b>을(를) 가져왔어요!`:`<b>${esc(pz.label)}</b>을(를) ${esc(opNick)}님에게 줬어요`):pz===null||d.prizeNone?(win?`${esc(opNick)}님은 줄 게 하나도 없었어요 😅`:"줄 게 없어서 아무것도 안 줬어요"):"정산하는 중…"}</p></div>
       <button class="btn" id="rpsDone">닫기</button>`;
   } else {
     body=`${lastHtml}<p style="text-align:center;margin:6px 0">${n}번째 판 · ${myMove?(opMove?"":"상대를 기다리는 중… ⏳"):"무엇을 낼까요?"}</p>
@@ -3004,6 +3061,7 @@ function giveStake(p){
     S.house=S.houses[0]; if(where==="room"&&curHouse===i&&!visitId){ where="map"; } }
 }
 function takeStake(p){
+  if(p.kind==="sign") return "";
   if(p.kind==="floors"){ let mine=S.houses.findIndex(x=>x.mat); if(mine<0){ S.houses[0]={...S.houses[0],mat:p.mat,level:0}; mine=0; } S.houses[mine].level=(S.houses[mine].level||1)+p.n; S.house=S.houses[0]; return `우리 ${houseName(mine)}이 ${S.houses[mine].level}층이 됐어요`; }
   if(p.kind==="coins"){ S.coins+=p.n; return ""; }
   if(p.kind==="vehicle"){ S.vehicles=S.vehicles||[]; if(S.vehicles.includes(p.v)){ S.coins+=p.val; return `이미 있어서 🪙${p.val}로 받았어요`; }
@@ -3024,7 +3082,9 @@ async function rpsSettle(d){
   const me=rpsRole(d), win=st.winRole===me;
   if(!st.winRole){ return; }
   if(!win&&!d.paid&&!rpsPaying.has(d.id)){ rpsPaying.add(d.id);
-    let p=null; if(d.game==="tug"){ const n=Math.floor((S.coins||0)*.1); p=n>0?{kind:"coins",n,val:n,label:`🪙${n}`}:null; } else p=bestStake(); if(p) giveStake(p); save(); try{ await flush(); }catch(e){}
+    let p=null; if(d.game==="tug"){ const n=Math.floor((S.coins||0)*.1); p=n>0?{kind:"coins",n,val:n,label:`🪙${n}`}:null; }
+    else { const wn=me==="a"?d.toNick:d.fromNick; S.shameSign={text:`${wn}에게 가위바위보 짐 😭`,until:Date.now()+86400000}; p={kind:"sign",label:"벌칙 팻말"}; postEvent(`✊ ${wn}님이 가위바위보에서 ${S.nick}님을 이겼어요! ${S.nick}님 집 앞에 하루 동안 벌칙 팻말이 붙었어요 😭`); }
+    if(p&&p.kind!=="sign") giveStake(p); save(); try{ await flush(); }catch(e){}
     const opNick=me==="a"?d.toNick:d.fromNick;
     logAct(`가위바위보 짐 → ${opNick}님에게 ${p?p.label:"없음"}`);
     try{ await db.doc("rps/"+d.id).update({status:"done",paid:true,winner:me==="a"?d.to:d.from,prize:p||null,prizeNone:!p}); }catch(e){}
@@ -3033,7 +3093,8 @@ async function rpsSettle(d){
     let note=""; if(d.prize) note=takeStake(d.prize); save();
     try{ await db.doc("rps/"+d.id).update({claimed:true}); }catch(e){}
     const opNick=me==="a"?d.toNick:d.fromNick; logAct(`가위바위보 이김 ← ${opNick}님 ${d.prize?d.prize.label:"없음"}`);
-    if(d.prize){ toast(`🏆 ${d.prize.label}을(를) 가져왔어요! ${note}`); SFX.coin(); } renderTop(); render(); if(rpsActive===d.id) rpsRender(d); }
+    if(d.prize&&d.prize.kind==="sign") toast(`🏆 이겼어요! ${opNick}님 집 앞에 벌칙 팻말이 붙었어요 😆`);
+    else if(d.prize){ toast(`🏆 ${d.prize.label}을(를) 가져왔어요! ${note}`); SFX.coin(); } renderTop(); render(); if(rpsActive===d.id) rpsRender(d); }
 }
 
 // =====================================================================
@@ -3200,14 +3261,15 @@ function theftMarkTap(fx,fy){
 // =====================================================================
 function floorStealSheet(){
   const o=owner(), lv=floorsOf(o,curHouse); if(lv<2){ toast("1층짜리 집은 뜯어갈 층이 없어요"); return; }
-  openSheet("🏗 한 층 훔치기",`<div class="guide"><div class="gic">🏗</div><h2>${esc(o.nick)}님 집에서 한 층을 뜯어갈까요?</h2><p>지금 ${lv}층이에요. 뜯어간 층은 우리 집 위에 쌓여요. 한 번에 한 층씩만 가져갈 수 있어요.</p></div>
+  openSheet("🏗 한 층 훔치기",`<div class="guide"><div class="gic">🏗</div><h2>${esc(o.nick)}님 집에서 한 층을 뜯어갈까요?</h2><p>지금 ${lv}층이에요. 뜯어간 층은 우리 집 위에 쌓여요. 한 번에 한 층씩만 가져갈 수 있어요. (오늘 훔치기 ${Math.max(0,stealLeft())}번 남음)</p></div>
     <div class="row"><button class="btn sub grow" data-close>그만둘래요</button><button class="btn grow" id="flGo">🏗 몰래 한 층 뜯어가기</button></div>`,w=>{ w.querySelector("#flGo").onclick=()=>{ closeSheet(); stealFloors(1); }; });
 }
 let pendingFloorTake=0;
 function stealFloors(n){
   const o=owner(), hi=curHouse, h=housesOf(o)[hi]; if(!visitId||!h||!h.mat) return;
+  if(!canSteal()) return;
   if(guardWatching(o)){ caughtByGuard(o,`집 ${n}층 뜯어가기`); return; }
-  if(!useEnergy("steal",true)) return;
+  if(!useEnergy("steal",true)) return; usedSteal();
   let mine=S.houses.findIndex(x=>x.mat); if(mine<0){ S.houses[0]={...S.houses[0],mat:h.mat,level:0}; mine=0; }
   S.houses[mine].level=(S.houses[mine].level||1)+n; S.house=S.houses[0]; bump("stealFloors",n);
   const rec={kind:"floors",hi,n,mat:h.mat,crop:h.mat,to:visitId,toNick:o.nick,from:docId,fromNick:S.nick,at:Date.now(),applied:false,seen:false};
@@ -3294,26 +3356,52 @@ function kingRewardSheet(){
       toast("🧚 요정이 하루 동안 보디가드 옆에서 콕콕 깨워줘요!"); logAct("왕 선물: 깨우는 요정"); }; });
 }
 function penOpenPick(){
-  const list=players.filter(p=>p.nick&&idFor(p.nick)!==docId&&shown(idFor(p.nick))&&animalsOf(p).length);
+  const list=players.filter(p=>p.nick&&idFor(p.nick)!==docId&&shown(idFor(p.nick))&&animalsOf(p).length&&!lockOn(p));
   if(!list.length){ toast("동물을 키우는 이웃이 없어요"); return; }
   openSheet("🔓 누구네 우리를 열어둘까요?",`<p class="note">고른 집의 동물이 모두 도망가서, 자리가 남는 이웃 집들에 나눠서 들어가요.</p>
     <div class="list">${list.map(p=>`<button class="item inboxitem" data-po="${esc(idFor(p.nick))}"><span class="ic">🐾</span><span class="grow"><span class="nm">${esc(p.nick)}</span><br><span class="sub">동물 ${animalsOf(p).length}마리</span></span>›</button>`).join("")}</div>
     <button class="btn sub" id="poBack">뒤로</button>`,w=>{
     w.querySelector("#poBack").onclick=()=>kingRewardSheet();
     w.querySelectorAll("[data-po]").forEach(b=>b.onclick=async()=>{ const pid=b.dataset.po, p=players.find(x=>idFor(x.nick)===pid); if(!p) return;
-      const rec={kind:"penopen",to:pid,toNick:p.nick,from:docId,fromNick:S.nick,n:animalsOf(p).length,crop:"a_cow",at:Date.now(),applied:false,seen:false};
+      const list=animalsOf(p).map(a=>a.type);
+      const rec={kind:"penopen",to:pid,toNick:p.nick,from:docId,fromNick:S.nick,n:list.length,crop:"a_cow",at:Date.now(),applied:false,seen:false};
       try{ await db.collection("thefts").add(rec); }catch(e){ toast("열지 못했어요"); return; }
+      postEvent(`🔓 ${S.nick}님(어제의 왕)이 ${p.nick}님네 우리 문을 열었어요! ${p.nick}님이 돌아오면 동물들이 우르르 흩어져서 모두의 집으로 가요 🐄🐑🐔`);
       S.kingRewardDate=dayStr(); save(); closeSheet(); siren(); shake=.8; logAct(`왕 선물: ${p.nick}님 우리 열어두기`);
-      toast(`🔓 ${p.nick}님네 우리 문을 활짝 열었어요! 동물들이 우르르 도망가요 🐄🐑🐔`); }); });
+      toast(`🔓 ${p.nick}님네 우리 문을 활짝 열었어요! ${p.nick}님이 돌아오면 동물들이 모두의 집으로 흩어져요 🐄🐑🐔`); }); });
+}
+// 우리를 연 사람(왕)이 바로 동물을 모두의 집에 나눠 보내요 (자리 남는 집만)
+async function scatterFrom(victimPid,victimNick,list){
+  const cap=p=>MAX_ANIMALS+2*growLevels(p)+2*(p.penExtra||0)-((p.animals||[]).length);
+  const homes=[{pid:docId,nick:S.nick,room:Math.max(0,maxAnimals()-S.animals.length),got:[],me:true},
+    ...players.filter(p=>p.nick&&idFor(p.nick)!==docId&&idFor(p.nick)!==victimPid).map(p=>({pid:idFor(p.nick),nick:p.nick,room:Math.max(0,cap(p)),got:[]}))].filter(h=>h.room>0);
+  let i=0; list.forEach(ty=>{ if(!homes.some(h=>h.room>0)) return; while(homes[i%homes.length].room<=0) i++; const h=homes[i%homes.length]; h.got.push(ty); h.room--; i++; });
+  for(const h of homes){ if(!h.got.length) continue;
+    if(h.me){ h.got.forEach(ty=>S.animals.push({type:ty,at:Date.now()})); animsKey=""; save(); }
+    else try{ await db.collection("escapes").add({to:h.pid,toNick:h.nick,from:victimPid,fromNick:victimNick,list:h.got,at:Date.now(),applied:false}); }catch(e){} }
+  return {homes:homes.filter(h=>h.got.length).length};
+}
+// 📰 마을 소식: 모두에게 알려요 (들어올 때 못 본 소식을 보여줘요)
+let villageEvents=[];
+function postEvent(text){ if(mode==="db") db.collection("events").add({text,from:docId,at:Date.now()}).catch(()=>{}); }
+function eventsCheck(){
+  if(!S||mode!=="db"||!$("sheetwrap").hidden||giant||Date.now()-gameStartAt<3500) return;
+  const since=Math.max(S.eventSeen||0,Date.now()-3*86400000), fresh=villageEvents.filter(e=>e.at>since&&e.from!==docId);
+  if(!fresh.length){ if(!S.eventSeen){ S.eventSeen=Date.now(); } return; }
+  S.eventSeen=Date.now(); save(); siren();
+  openSheet("📰 마을 소식",`<div class="list">${fresh.slice(0,8).map(e=>`<div class="item" style="display:block"><p style="margin:0">${esc(e.text)}</p><span class="sub">${ago(e.at)}</span></div>`).join("")}</div><button class="btn" data-close>알겠어요</button>`);
 }
 // 우리가 열린 집(주인 쪽)이 동물을 이웃들에게 나눠 보내요
 async function scatterAnimals(t){
   const list=(S.animals||[]).map(a=>a.type); S.animals=[]; animsKey="";
   const cap=p=>MAX_ANIMALS+2*growLevels(p)+2*(p.penExtra||0)-((p.animals||[]).length);
-  const homes=players.filter(p=>p.nick&&idFor(p.nick)!==docId).map(p=>({pid:idFor(p.nick),nick:p.nick,room:Math.max(0,cap(p)),got:[]})).filter(h=>h.room>0);
+  const homes=[{pid:docId,nick:S.nick,room:maxAnimals(),got:[],me:true},...players.filter(p=>p.nick&&idFor(p.nick)!==docId).map(p=>({pid:idFor(p.nick),nick:p.nick,room:Math.max(0,cap(p)),got:[]}))].filter(h=>h.room>0);
+  homes.sort(()=>Math.random()-.5);
   let i=0, lost=0; list.forEach(ty=>{ let tries=0; while(tries<homes.length&&homes[i%homes.length].room<=0){ i++; tries++; } const h=homes[i%homes.length];
     if(h&&h.room>0){ h.got.push(ty); h.room--; i++; } else lost++; });
-  for(const h of homes) if(h.got.length) try{ await db.collection("escapes").add({to:h.pid,toNick:h.nick,from:docId,fromNick:S.nick,list:h.got,at:Date.now(),applied:false}); }catch(e){}
+  for(const h of homes){ if(!h.got.length) continue; if(h.me){ h.got.forEach(ty=>S.animals.push({type:ty,at:Date.now()})); animsKey=""; continue; }
+    try{ await db.collection("escapes").add({to:h.pid,toNick:h.nick,from:docId,fromNick:S.nick,list:h.got,at:Date.now(),applied:false}); }catch(e){} }
+  postEvent(`🔓 ${t.fromNick}님(어제의 왕)이 ${S.nick}님네 우리 문을 열었어요! 동물 ${list.length}마리가 ${homes.filter(h=>h.got.length).length}집으로 흩어졌어요 🐄🐑🐔`);
   return {n:list.length,lost};
 }
 let escapes=[], handledEsc=new Set();
@@ -3335,6 +3423,7 @@ function releaseBoar(x,y){
   const o=owner(); if(!visitId) return; const F=fieldOf(o);
   const keys=Object.keys(F).sort((a,b)=>{ const [ax,ay]=a.split(",").map(Number), [bx,by]=b.split(",").map(Number); return Math.hypot(ax-x,ay-y)-Math.hypot(bx-x,by-y); }).slice(0,boarCount(Object.keys(F).length));
   if(!keys.length) return;
+  if(barnOn(o)){ SFX.no(); toast("🏚 창고가 지키고 있어서 멧돼지가 밭에 못 들어가요"); return; }
   S.boarDone=S.boarDone||{}; if(S.boarDone[visitId]===dayStr()){ toast("🐗 이 집엔 오늘 이미 멧돼지를 풀었어요. 내일 다시 할 수 있어요"); return; }
   if(guardWatching(o)){ caughtByGuard(o,"멧돼지 풀기"); return; }
   if(!useEnergy("steal",true)) return;
@@ -3360,7 +3449,7 @@ function stepDrawBoar(items,c,t,time,dt){
 // =====================================================================
 // ❓ 금요일 퀴즈: 마을 사람들 이야기로 내는 찍기 퀴즈, 맞히면 하나에 🪙200
 // =====================================================================
-const UPDATES_COUNT=53, QUIZ_PRIZE=200;
+const UPDATES_COUNT=55, QUIZ_PRIZE=200;
 function seeded(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function nearOpts(ans,rnd,min=0){ const set=new Set([ans]); let spread=Math.max(3,Math.round(ans*.4)), guard=0;
   while(set.size<4&&guard++<60){ const v=ans+Math.round((rnd()*2-1)*spread)||ans+set.size; if(v>=min) set.add(v); }
@@ -3682,9 +3771,14 @@ function vMarket(v){
     L.querySelectorAll("[data-sa]").forEach(b=>b.onclick=()=>sell(b.dataset.sa,inv(b.dataset.sa)));
   } else if(marketMode==="buy"){
     const gLeft=(S.guardUntil||0)-Date.now();
-    L.innerHTML=`<div class="item"><span class="ic">🐾</span><span class="grow"><span class="nm">동물 우리 넓히기 (+2마리)</span><br><span class="sub">지금 ${maxAnimals()}마리까지 키울 수 있어요</span></span><span class="price">🪙${penCost(S.penExtra||0)}</span><button class="btn sm" id="morePen">넓히기</button></div><div class="item"><span class="ic">🕴️</span><span class="grow"><span class="nm">보디가드 고용 (7일)</span><br><span class="sub">${gLeft>0?`지키는 중 · ${Math.ceil(gLeft/86400000)}일 남음`:"몰래 가져가려는 사람을 잡아 감옥에 가둬요"}</span></span><span class="price">🪙${GUARD_COST}</span><button class="btn sm" id="hireGuard">${gLeft>0?"연장":"고용"}</button></div>`+`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal&&!ITEMS[k].nobuy).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
+    const lk=(S.lockUntil||0)-Date.now(), bn=(S.barnUntil||0)-Date.now(), hrs=ms=>`${Math.ceil(ms/3600000)}시간 남음`;
+    L.innerHTML=`<div class="item"><span class="ic">🔒</span><span class="grow"><span class="nm">우리 자물쇠 (하루)</span><br><span class="sub">${lk>0?`잠그는 중 · ${hrs(lk)}`:"아무도 동물·생산품을 못 가져가요"}</span></span><span class="price">🪙${LOCK_COST.toLocaleString()}</span><button class="btn sm" id="buyLock">${lk>0?"연장":"걸기"}</button></div>`
+      +`<div class="item"><span class="ic">🏚</span><span class="grow"><span class="nm">작물 창고 (하루)</span><br><span class="sub">${bn>0?`보관 중 · ${hrs(bn)}`:"아무도 작물을 못 훔쳐가고 멧돼지도 못 들어와요"}</span></span><span class="price">🪙${BARN_COST.toLocaleString()}</span><button class="btn sm" id="buyBarn">${bn>0?"연장":"쓰기"}</button></div>`
+      +`<div class="item"><span class="ic">🐾</span><span class="grow"><span class="nm">동물 우리 넓히기 (+2마리)</span><br><span class="sub">지금 ${maxAnimals()}마리까지 키울 수 있어요</span></span><span class="price">🪙${penCost(S.penExtra||0)}</span><button class="btn sm" id="morePen">넓히기</button></div><div class="item"><span class="ic">🕴️</span><span class="grow"><span class="nm">보디가드 고용 (7일)</span><br><span class="sub">${gLeft>0?`지키는 중 · ${Math.ceil(gLeft/86400000)}일 남음`:"몰래 가져가려는 사람을 잡아 감옥에 가둬요"}</span></span><span class="price">🪙${GUARD_COST}</span><button class="btn sm" id="hireGuard">${gLeft>0?"연장":"고용"}</button></div>`+`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal&&!ITEMS[k].nobuy).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
       <span class="price">🪙${buyPrice(k)}</span><button class="btn sm sub" data-b1="${k}">1개</button>${ITEMS[k].buy?`<button class="btn sm" data-b100="${k}">100개</button>`:""}<button class="btn sm sub" data-bn="${k}" aria-label="원하는 개수">✏️</button></div>`).join("");
     const buy=(k,n)=>{ if(!pay(buyPrice(k)*n)) return; logAct(`${ITEMS[k].name} ${n}개 사기`); addInv(k,n); save(); toast(`${ITEMS[k].name} ${n}개를 샀어요`); render(); };
+    L.querySelector("#buyLock").onclick=()=>{ if(!pay(LOCK_COST)) return; S.lockUntil=Math.max(Date.now(),S.lockUntil||0)+86400000; logAct("우리 자물쇠 걸기"); save(); SFX.build(); toast("🔒 하루 동안 우리에 자물쇠를 걸었어요! 동물도 생산품도 안전해요"); render(); };
+    L.querySelector("#buyBarn").onclick=()=>{ if(!pay(BARN_COST)) return; S.barnUntil=Math.max(Date.now(),S.barnUntil||0)+86400000; logAct("작물 창고 쓰기"); save(); SFX.build(); toast("🏚 하루 동안 작물을 창고에 지켜요! 훔치기도 멧돼지도 못 와요"); render(); };
     L.querySelector("#morePen").onclick=()=>{ const c=penCost(S.penExtra||0); if(!pay(c)) return; S.penExtra=(S.penExtra||0)+1; logAct("동물 우리 넓히기"); save(); SFX.build(); toast(`🐾 우리가 넓어졌어요! 이제 ${maxAnimals()}마리까지 키워요`); render(); };
     L.querySelector("#hireGuard").onclick=()=>{ if(!pay(GUARD_COST)) return; S.guardUntil=Math.max(Date.now(),S.guardUntil||0)+7*86400000; logAct("보디가드 고용"); save(); SFX.build(); toast("🕴️ 보디가드가 일주일 동안 우리 마을을 지켜요"); render(); };
     L.querySelector("#moreField").onclick=()=>{ if(!pay(PLOT_COST)) return; S.fieldMax++; save(); toast(`이제 밭을 ${S.fieldMax}칸까지 쓸 수 있어요`); render(); };
@@ -3965,7 +4059,7 @@ setInterval(()=>{
   if(!S) return;
   settleLure();
   if(S.awardSeen!==dayStr()&&mode==="db"&&players.length&&$("sheetwrap").hidden&&Date.now()-gameStartAt>3000&&!giant) showAwards();
-  quizCheck();
+  quizCheck(); eventsCheck();
   if(!rpsActive){ giantCheck(); liftCheck(); }
   guardTick();
   if(isMoving(W[where])) markActive();
