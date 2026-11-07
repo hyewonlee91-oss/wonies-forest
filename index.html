@@ -434,7 +434,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <script>
 // 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
 (function(){
-  var V="11.07-3";
+  var V="11.07-4";
   window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
   setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
     var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
@@ -499,7 +499,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.07-3</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.07-4</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -812,7 +812,7 @@ async function hashPin(nick,pin){
 // 업데이트 소식: 새 소식을 넣을 때 NEWS에 날짜(id)와 내용을 적어요.
 // 사람마다 한 번만 떠요(다음 접속부터는 안 뜸). 비어 있으면 아무것도 안 떠요.
 const NEWS={id:"2026-11-07c", title:"🎉 새로운 기능이 추가되었어요!", sub:"업데이트되었어요. 이렇게 즐겨보세요!", items:[
-  {h:"🔒 자물쇠 · 🏚 창고", d:"시장 › 사기에서 하루 🪙50,000으로 우리 자물쇠(동물·생산품 못 가져감)와 작물 창고(작물 못 훔쳐가고 멧돼지도 못 옴)를 쓸 수 있어요."},
+  {h:"🔒 자물쇠 · 🏚 창고", d:"시장 › 사기에서 2시간에 🪙50,000으로 우리 자물쇠(동물·생산품 못 가져감)와 작물 창고(작물 못 훔쳐가고 멧돼지도 못 옴)를 쓸 수 있어요."},
   {h:"✊ 가위바위보 벌칙이 바뀌었어요", d:"이제 지면 물건을 안 잃어요! 대신 하루 동안 집 앞에 \"○○에게 가위바위보 짐 😭\" 팻말이 붙고 모두에게 소식이 가요."},
   {h:"🌱 훔친 작물은 우리 밭으로", d:"친구 밭에서 몰래 가져온 작물은 우리 밭 빈 칸에 옮겨 심어져요. 집에 가서 수확해요!"},
   {h:"🥛 동물 생산품 몰래 가져가기", d:"친구 동물을 누르면 유인 말고도 다 만들어진 우유·달걀·양털을 몰래 가져올 수 있어요."},
@@ -2507,7 +2507,11 @@ function siren(){ [0,.36,.72].forEach(a=>{ tone(920,.3,{at:a,type:"square",vol:.
 // 🦹 훔치기는 하루 5번까지 (밭·동물·생산품·집 층 모두 합쳐서)
 const STEAL_MAX=5, LOCK_COST=50000, BARN_COST=50000;
 // 🔒 자물쇠(동물 보호) · 🏚 창고(작물 보호): 하루씩
-const lockOn=o=>!!o&&(o.lockUntil||0)>Date.now(), barnOn=o=>!!o&&(o.barnUntil||0)>Date.now();
+// 이용 시간은 2시간. 예전에 하루로 산 것도 산 시점부터 2시간까지만 인정해요
+const PROTECT_MS=2*3600000, DAY_MS=86400000;
+const lockEnd=o=>!o?0:o.lockV2?(o.lockUntil||0):Math.min(o.lockUntil||0,(o.lockUntil||0)-DAY_MS+PROTECT_MS);
+const barnEnd=o=>!o?0:o.barnV2?(o.barnUntil||0):Math.min(o.barnUntil||0,(o.barnUntil||0)-DAY_MS+PROTECT_MS);
+const lockOn=o=>!!o&&lockEnd(o)>Date.now(), barnOn=o=>!!o&&barnEnd(o)>Date.now();
 function stealLeft(){ const t=dayStr(); if(!S.stealDay||S.stealDay.date!==t) S.stealDay={date:t,n:0}; return STEAL_MAX-S.stealDay.n; }
 function canSteal(){ if(stealLeft()<=0){ SFX.no(); toast(`🦹 오늘은 ${STEAL_MAX}번 다 훔쳤어요. 내일 다시 할 수 있어요!`); return false; } return true; }
 function usedSteal(){ stealLeft(); S.stealDay.n++; const l=STEAL_MAX-S.stealDay.n; setTimeout(()=>toast(`🦹 오늘 훔치기 ${l}번 남았어요`),2300); }
@@ -3449,7 +3453,7 @@ function stepDrawBoar(items,c,t,time,dt){
 // =====================================================================
 // ❓ 금요일 퀴즈: 마을 사람들 이야기로 내는 찍기 퀴즈, 맞히면 하나에 🪙200
 // =====================================================================
-const UPDATES_COUNT=56, QUIZ_PRIZE=200;
+const UPDATES_COUNT=57, QUIZ_PRIZE=200;
 function seeded(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function nearOpts(ans,rnd,min=0){ const set=new Set([ans]); let spread=Math.max(3,Math.round(ans*.4)), guard=0;
   while(set.size<4&&guard++<60){ const v=ans+Math.round((rnd()*2-1)*spread)||ans+set.size; if(v>=min) set.add(v); }
@@ -3771,14 +3775,14 @@ function vMarket(v){
     L.querySelectorAll("[data-sa]").forEach(b=>b.onclick=()=>sell(b.dataset.sa,inv(b.dataset.sa)));
   } else if(marketMode==="buy"){
     const gLeft=(S.guardUntil||0)-Date.now();
-    const lk=(S.lockUntil||0)-Date.now(), bn=(S.barnUntil||0)-Date.now(), hrs=ms=>`${Math.ceil(ms/3600000)}시간 남음`;
-    L.innerHTML=`<div class="item"><span class="ic">🔒</span><span class="grow"><span class="nm">우리 자물쇠 (하루)</span><br><span class="sub">${lk>0?`잠그는 중 · ${hrs(lk)}`:"아무도 동물·생산품을 못 가져가요"}</span></span><span class="price">🪙${LOCK_COST.toLocaleString()}</span><button class="btn sm" id="buyLock">${lk>0?"연장":"걸기"}</button></div>`
-      +`<div class="item"><span class="ic">🏚</span><span class="grow"><span class="nm">작물 창고 (하루)</span><br><span class="sub">${bn>0?`보관 중 · ${hrs(bn)}`:"아무도 작물을 못 훔쳐가고 멧돼지도 못 들어와요"}</span></span><span class="price">🪙${BARN_COST.toLocaleString()}</span><button class="btn sm" id="buyBarn">${bn>0?"연장":"쓰기"}</button></div>`
+    const lk=lockEnd(S)-Date.now(), bn=barnEnd(S)-Date.now(), hrs=ms=>ms>=3600000?`${Math.floor(ms/3600000)}시간 ${Math.ceil(ms%3600000/60000)}분 남음`:`${Math.ceil(ms/60000)}분 남음`;
+    L.innerHTML=`<div class="item"><span class="ic">🔒</span><span class="grow"><span class="nm">우리 자물쇠 (2시간)</span><br><span class="sub">${lk>0?`잠그는 중 · ${hrs(lk)}`:"아무도 동물·생산품을 못 가져가요"}</span></span><span class="price">🪙${LOCK_COST.toLocaleString()}</span><button class="btn sm" id="buyLock">${lk>0?"연장":"걸기"}</button></div>`
+      +`<div class="item"><span class="ic">🏚</span><span class="grow"><span class="nm">작물 창고 (2시간)</span><br><span class="sub">${bn>0?`보관 중 · ${hrs(bn)}`:"아무도 작물을 못 훔쳐가고 멧돼지도 못 들어와요"}</span></span><span class="price">🪙${BARN_COST.toLocaleString()}</span><button class="btn sm" id="buyBarn">${bn>0?"연장":"쓰기"}</button></div>`
       +`<div class="item"><span class="ic">🐾</span><span class="grow"><span class="nm">동물 우리 넓히기 (+2마리)</span><br><span class="sub">지금 ${maxAnimals()}마리까지 키울 수 있어요</span></span><span class="price">🪙${penCost(S.penExtra||0)}</span><button class="btn sm" id="morePen">넓히기</button></div><div class="item"><span class="ic">🕴️</span><span class="grow"><span class="nm">보디가드 고용 (7일)</span><br><span class="sub">${gLeft>0?`지키는 중 · ${Math.ceil(gLeft/86400000)}일 남음`:"몰래 가져가려는 사람을 잡아 감옥에 가둬요"}</span></span><span class="price">🪙${GUARD_COST}</span><button class="btn sm" id="hireGuard">${gLeft>0?"연장":"고용"}</button></div>`+`<div class="item"><span class="ic">🟫</span><span class="grow"><span class="nm">밭 한 칸 늘리기</span><br><span class="sub">지금 ${S.fieldMax}칸까지 심을 수 있어요</span></span><span class="price">🪙${PLOT_COST}</span><button class="btn sm" id="moreField">늘리기</button></div>`+Object.keys(ITEMS).filter(k=>!ITEMS[k].craft&&!ITEMS[k].animal&&!ITEMS[k].nobuy).map(k=>`<div class="item"><span class="ic">${ITEMS[k].ic}</span><span class="grow"><span class="nm">${ITEMS[k].name}</span><br><span class="sub">가진 것 ${inv(k)}개</span></span>
       <span class="price">🪙${buyPrice(k)}</span><button class="btn sm sub" data-b1="${k}">1개</button>${ITEMS[k].buy?`<button class="btn sm" data-b100="${k}">100개</button>`:""}<button class="btn sm sub" data-bn="${k}" aria-label="원하는 개수">✏️</button></div>`).join("");
     const buy=(k,n)=>{ if(!pay(buyPrice(k)*n)) return; logAct(`${ITEMS[k].name} ${n}개 사기`); addInv(k,n); save(); toast(`${ITEMS[k].name} ${n}개를 샀어요`); render(); };
-    L.querySelector("#buyLock").onclick=()=>{ if(!pay(LOCK_COST)) return; S.lockUntil=Math.max(Date.now(),S.lockUntil||0)+86400000; logAct("우리 자물쇠 걸기"); save(); SFX.build(); toast("🔒 하루 동안 우리에 자물쇠를 걸었어요! 동물도 생산품도 안전해요"); render(); };
-    L.querySelector("#buyBarn").onclick=()=>{ if(!pay(BARN_COST)) return; S.barnUntil=Math.max(Date.now(),S.barnUntil||0)+86400000; logAct("작물 창고 쓰기"); save(); SFX.build(); toast("🏚 하루 동안 작물을 창고에 지켜요! 훔치기도 멧돼지도 못 와요"); render(); };
+    L.querySelector("#buyLock").onclick=()=>{ if(!pay(LOCK_COST)) return; S.lockUntil=Math.max(Date.now(),lockEnd(S))+PROTECT_MS; S.lockV2=true; logAct("우리 자물쇠 걸기"); save(); SFX.build(); toast("🔒 2시간 동안 우리에 자물쇠를 걸었어요! 동물도 생산품도 안전해요"); render(); };
+    L.querySelector("#buyBarn").onclick=()=>{ if(!pay(BARN_COST)) return; S.barnUntil=Math.max(Date.now(),barnEnd(S))+PROTECT_MS; S.barnV2=true; logAct("작물 창고 쓰기"); save(); SFX.build(); toast("🏚 2시간 동안 작물을 창고에 지켜요! 훔치기도 멧돼지도 못 와요"); render(); };
     L.querySelector("#morePen").onclick=()=>{ const c=penCost(S.penExtra||0); if(!pay(c)) return; S.penExtra=(S.penExtra||0)+1; logAct("동물 우리 넓히기"); save(); SFX.build(); toast(`🐾 우리가 넓어졌어요! 이제 ${maxAnimals()}마리까지 키워요`); render(); };
     L.querySelector("#hireGuard").onclick=()=>{ if(!pay(GUARD_COST)) return; S.guardUntil=Math.max(Date.now(),S.guardUntil||0)+7*86400000; logAct("보디가드 고용"); save(); SFX.build(); toast("🕴️ 보디가드가 일주일 동안 우리 마을을 지켜요"); render(); };
     L.querySelector("#moreField").onclick=()=>{ if(!pay(PLOT_COST)) return; S.fieldMax++; save(); toast(`이제 밭을 ${S.fieldMax}칸까지 쓸 수 있어요`); render(); };
