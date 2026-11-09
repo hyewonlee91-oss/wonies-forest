@@ -434,7 +434,7 @@ table.dash time{color:var(--muted);margin-right:6px}
 <script>
 // 첫 화면에서 멈추면 원인을 화면에 보여주고, 그냥 들어가기 버튼을 띄워요
 (function(){
-  var V="11.07-4";
+  var V="11.09-2";
   window.addEventListener("error",function(e){ var el=document.getElementById("gateErr"); if(el&&!document.getElementById("gate").hidden) el.textContent="오류: "+(e.message||"")+" (줄 "+(e.lineno||"?")+") · 버전 "+V; });
   setTimeout(function(){ var g=document.getElementById("gate"); if(!g||g.hidden) return;
     var n=document.getElementById("connNote"); if(n) n.textContent="버전 "+V+" · 화면이 안 넘어가면 아래 버튼을 눌러주세요";
@@ -499,7 +499,7 @@ table.dash time{color:var(--muted);margin-right:6px}
     <button class="dbtn" id="helpBtn">❔ 이용 안내</button>
     <button class="dbtn" id="soundBtn">♪ 배경음악</button>
     <button class="dbtn" id="logoutBtn">⎋ 나가기</button>
-    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.07-4</p>
+    <p class="note" style="text-align:center;margin-top:auto">워니의숲 버전 11.09-2</p>
   </aside>
 </div>
 <div id="joinBanner" class="joinbanner" hidden></div>
@@ -2417,6 +2417,9 @@ function rentDaily(){
 function houseName(i){ return i===0?"큰집":`${i+1}번째 집`; }
 function houseTitle(h){ return h.mat?`${MATS[h.mat]} · ${h.level||1}층${h.wing?` · 옆으로 +${h.wing}칸`:""}${h.fence?" · 울타리":""}`:"빈 집터"; }
 function spend(m,n){ if(inv(m)<n){ toast(`${ITEMS[m].name}이(가) ${n-inv(m)}개 모자라요. 시장에서 살 수 있어요`); SFX.no(); return false; } addInv(m,-n); return true; }
+// 재료로 한 번에 올릴 수 있는 최대 층수
+function maxFloorsUp(h){ let lv=h.level||1, have=inv(h.mat), n=0; while(n<100000){ const c=upCost(lv+n); if(have<c) break; have-=c; n++; } return n; }
+function floorsCost(h,n){ let lv=h.level||1, sum=0; for(let j=0;j<n;j++) sum+=upCost(lv+j); return sum; }
 function houseSheet(){
   const hs=S.houses, canMore=hs.length<MAX_HOUSES;
   const matBtn=(attr,m,cost)=>`<button class="btn sm sub" ${attr}>${ITEMS[m].ic} ${MATS[m]}<br><small>${ITEMS[m].name} ${cost} · 가진 것 ${inv(m)}</small></button>`;
@@ -2426,6 +2429,8 @@ function houseSheet(){
     return `<div class="card hcard"><div class="hprev">${houseSVG(h)}</div><b>${i===0?"🏠":"🏡"} ${houseName(i)} · ${esc(houseTitle(h))}</b>
       <div class="hbtns">
         <button class="btn sm" data-up="${i}">⬆ ${lv+1}층 올리기<br><small>${ITEMS[m].name} ${upCost(lv)} · 가진 것 ${inv(m)}</small></button>
+        <button class="btn sm" data-upmax="${i}" ${maxFloorsUp(h)?"":"disabled"}>⏫ 최대로 올리기<br><small>지금 재료로 ${maxFloorsUp(h)}층 → ${lv+maxFloorsUp(h)}층</small></button>
+        <button class="btn sm sub" data-upn="${i}">✏️ 층 수 쓰기<br><small>원하는 만큼 올리기</small></button>
         <button class="btn sm" data-wing="${i}" ${wg>=2?"disabled":""}>➡ 옆으로 넓히기<br><small>${wg>=2?"가장 넓어요":`${ITEMS[m].name} ${wingCost(wg)}`}</small></button>
         <button class="btn sm sub" data-fence="${i}">${h.fence?"울타리 걷기":"🪵 울타리 치기"}<br><small>${h.fence?"다시 칠 수 있어요":`나무 ${FENCE_COST}`}</small></button>
       </div>
@@ -2438,6 +2443,18 @@ function houseSheet(){
   openSheet("🔨 집 짓기 · 넓히기",`${perk}${parts}${more}<p class="note">재료는 시장 › 먹거리·재료 사기에서 살 수 있어요. 지푸라기는 벼를 수확할 때도 생겨요.</p>`,w=>{
     const done=(msg,act)=>{ S.house=S.houses[0]; logAct(act); save(); SFX.build(); render(); houseSheet(); toast(msg); };
     w.querySelectorAll("[data-new0]").forEach(b=>b.onclick=()=>{ const m=b.dataset.new0; if(!spend(m,BUILD_COST)) return; Object.assign(hs[0],{mat:m,level:1,wing:0,fence:false,lot:0}); done(`${MATS[m]}을 지었어요!`,`${MATS[m]} 짓기`); });
+    w.querySelectorAll("[data-upn]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.upn, h=hs[i], max=maxFloorsUp(h), it=ITEMS[h.mat];
+      if(max<1){ toast(`${it.name}이(가) 모자라요. 시장에서 100개씩 살 수 있어요`); SFX.no(); return; }
+      openSheet("⏫ 여러 층 한 번에 올리기",`<p>${houseName(i)} 지금 ${h.level||1}층 · 가진 ${it.ic} ${it.name} ${inv(h.mat).toLocaleString()}개로 <b>최대 ${max}층</b>까지 올릴 수 있어요.</p>
+        <div class="row"><input id="upN" type="number" min="1" max="${max}" value="${max}" inputmode="numeric" style="flex:1"><button class="btn sm sub" id="upMax">최대</button></div>
+        <p class="note" id="upSum"></p>
+        <div class="row"><button class="btn sub grow" id="upBack">취소</button><button class="btn grow" id="upGo">올리기</button></div>`,w2=>{
+        const num=w2.querySelector("#upN"), sum=()=>{ const n=Math.max(1,Math.min(max,parseInt(num.value)||1)); w2.querySelector("#upSum").textContent=`${(h.level||1)+n}층이 돼요 · ${it.name} ${floorsCost(h,n).toLocaleString()}개 사용`; };
+        num.oninput=sum; sum(); w2.querySelector("#upMax").onclick=()=>{ num.value=max; sum(); }; w2.querySelector("#upBack").onclick=()=>houseSheet();
+        w2.querySelector("#upGo").onclick=()=>{ const n=Math.max(1,Math.min(max,parseInt(num.value)||1)), c=floorsCost(h,n); if(inv(h.mat)<c) return; addInv(h.mat,-c); h.level=(h.level||1)+n;
+          done(`⏫ 한 번에 ${n}층을 올려서 ${h.level}층이 됐어요!`,`${houseName(i)} ${n}층 올리기 (→${h.level}층)`); }; }); });
+    w.querySelectorAll("[data-upmax]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.upmax, h=hs[i], n=maxFloorsUp(h); if(n<1) return; const c=floorsCost(h,n); addInv(h.mat,-c); h.level=(h.level||1)+n;
+      done(`⏫ 한 번에 ${n}층을 올려서 ${h.level}층이 됐어요!`,`${houseName(i)} ${n}층 올리기 (→${h.level}층)`); });
     w.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>{ const h=hs[+b.dataset.up], lv=h.level||1; if(!spend(h.mat,upCost(lv))) return; h.level=lv+1; done(`${h.level}층으로 올렸어요! 집 안 계단으로 올라가 보세요`,`${houseName(+b.dataset.up)} ${h.level}층 올리기`); });
     w.querySelectorAll("[data-wing]").forEach(b=>b.onclick=()=>{ const h=hs[+b.dataset.wing], wg=h.wing||0; if(wg>=2) return; const hi=+b.dataset.wing, L=lotOf(h,hi);
       for(let yy=L.y;yy<L.y+2;yy++){ const xx=L.x+3+wg; if(!tileFree(xx,yy,hi)&&!(hi===0&&tileKind(xx,yy)==="grass"&&!fieldOf(S)[xx+","+yy])){ toast("집 오른쪽에 밭이나 나무가 있어서 넓힐 수 없어요"); SFX.no(); return; } }
@@ -3453,7 +3470,7 @@ function stepDrawBoar(items,c,t,time,dt){
 // =====================================================================
 // ❓ 금요일 퀴즈: 마을 사람들 이야기로 내는 찍기 퀴즈, 맞히면 하나에 🪙200
 // =====================================================================
-const UPDATES_COUNT=57, QUIZ_PRIZE=200;
+const UPDATES_COUNT=59, QUIZ_PRIZE=200;
 function seeded(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function nearOpts(ans,rnd,min=0){ const set=new Set([ans]); let spread=Math.max(3,Math.round(ans*.4)), guard=0;
   while(set.size<4&&guard++<60){ const v=ans+Math.round((rnd()*2-1)*spread)||ans+set.size; if(v>=min) set.add(v); }
